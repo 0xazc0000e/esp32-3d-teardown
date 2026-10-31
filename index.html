@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="نموذج ثلاثي الأبعاد تفاعلي لتشريح لوحة ESP32 DevKitC للمبتدئين — عمل الطالب عبد العزيز فهد الجعيد">
+<meta name="author" content="عبد العزيز فهد الجعيد">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>تشريح ESP32 DevKitC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: full-height workbench viewport with a docked spec sheet on the reading side (right, RTL) */
+:root{
+  --bench:#1c2229; --bench-2:#252d36; --surface:#13181d; --raise:#1a2128; --line:#2a333c;
+  --ink:#e8ecef; --mute:#8f9ca8; --accent:#e2a25a; --accent-ink:#1d1308;
+  --k-pwr:#e5735c; --k-gnd:#98a3ad; --k-in:#6fb3d9; --k-io:#9ccf8a; --k-strap:#e2c35a; --k-flash:#b58bd6; --k-uart:#e59ac0;
+  --ok-bg:#18241d; --ok-line:#2b4033; --ok-ink:#9ccf8a; --warn-bg:#271e15; --warn-line:#4a3721;
+  --f-display:"Noto Kufi Arabic","Readex Pro",system-ui,sans-serif;
+  --f-body:"Readex Pro","Noto Kufi Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bench);color:var(--ink);font-family:var(--f-body);font-size:15px;font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;box-sizing:border-box;
+  padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
+*{box-sizing:border-box}
+.app{height:100%;display:grid;grid-template-columns:370px minmax(0,1fr);gap:16px}
+.panel{min-width:0;display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-inline-end:4px;scrollbar-width:thin}
+.head .eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.head h1{font-family:var(--f-display);font-weight:800;font-size:29px;line-height:1.35;margin:6px 0 6px;text-wrap:balance}
+.head h1 span{font-family:var(--f-mono);font-weight:700;font-size:22px;color:var(--mute);margin-inline-start:6px}
+.head p{margin:0;color:#a9b4be;line-height:1.85;max-width:60ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card .cat{align-self:flex-start;font-size:11px;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600}
+.card h2{font-family:var(--f-display);font-size:22px;margin:0;line-height:1.3;text-wrap:balance}
+.card p{margin:0;line-height:1.95;color:#d6dce1}
+.card h2,.sbox h3,.tour h3{font-weight:700}
+.box{line-height:1.95!important;font-size:14.5px}
+.credit{display:flex;flex-direction:column;gap:6px;margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.credit .who{font-family:var(--f-display);font-weight:700;font-size:16px;color:var(--ink)}
+.credit .who small{display:block;font-family:var(--f-body);font-weight:400;font-size:12px;color:var(--mute);margin-bottom:2px}
+.credit .links{display:flex;flex-wrap:wrap;gap:8px}
+.credit a{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);text-decoration:none;background:var(--raise);border:1px solid var(--line);border-radius:7px;padding:5px 10px}
+.credit a:hover{border-color:var(--accent);color:var(--accent)}
+.credit a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.credit a svg{width:15px;height:15px;fill:currentColor}
+.stamp{position:absolute;bottom:96px;right:16px;font-size:12px;color:#c7d0d8;background:rgba(19,24,29,.78);border:1px solid var(--line);padding:4px 10px;border-radius:6px;pointer-events:none}
+@media (max-width:860px){.stamp{bottom:122px;right:10px;font-size:11px}}
+.card dl{margin:4px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;border-top:1px solid var(--line);padding-top:10px}
+.card dt{color:var(--mute);font-size:12.5px}
+.card dd{margin:0;font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums;unicode-bidi:plaintext;text-align:right;min-width:0;overflow-wrap:anywhere}
+.card .note{font-size:12.5px;color:var(--k-strap);line-height:1.7}
+.sec h3{font-size:12px;color:var(--mute);font-weight:600;letter-spacing:.04em;margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;color:var(--ink);background:var(--raise);border:1px solid var(--line);border-radius:7px;padding:5px 10px;cursor:pointer}
+.chip:hover{border-color:#3c4753}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip:focus-visible,.btn:focus-visible,.pin:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pinmap{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;direction:ltr}
+.pincol{display:flex;flex-direction:column;gap:3px}
+.pin{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;background:transparent;border:0;color:var(--ink);padding:2px 4px;border-radius:4px;cursor:pointer;text-align:left}
+.pincol.r .pin{flex-direction:row-reverse;text-align:right}
+.pin i{width:9px;height:9px;border-radius:2px;flex:none}
+.pin:hover,.pin[aria-pressed="true"]{background:var(--raise)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--mute);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:8px;height:8px;border-radius:2px}
+
+.stage{position:relative;min-width:0;border-radius:12px;overflow:hidden;background:var(--bench-2);border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lbl{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;transform-origin:0 0;white-space:nowrap}
+.lbl span{font-size:11.5px;font-weight:500;background:rgba(19,24,29,.86);border:1px solid var(--line);color:var(--ink);padding:2px 8px;border-radius:5px}
+.lbl i{width:1px;height:18px;background:var(--accent);opacity:.8}
+.lbl b{width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:-1px}
+.tip{position:absolute;left:0;top:0;pointer-events:none;background:#0e1215;border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12px;line-height:1.5;max-width:260px;z-index:3}
+.tip b{font-family:var(--f-mono);color:var(--accent)}
+.bar{position:absolute;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:rgba(19,24,29,.82);border:1px solid var(--line);border-radius:10px;padding:6px;backdrop-filter:blur(6px)}
+.views{top:12px;left:12px;direction:rtl}
+.hud{bottom:12px;left:12px;right:12px;gap:10px 14px;padding:8px 12px}
+.btn{font:inherit;font-size:12.5px;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:6px;padding:5px 10px;cursor:pointer}
+.btn:hover{background:var(--raise)}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.slider{display:flex;align-items:center;gap:10px;flex:1 1 220px;min-width:0}
+.slider label{font-size:12.5px;color:var(--mute);white-space:nowrap}
+.slider output{font-family:var(--f-mono);font-size:12px;width:3.5ch;color:var(--accent)}
+input[type=range]{direction:ltr;flex:1;min-width:0;accent-color:var(--accent)}
+.hint{position:absolute;top:14px;right:14px;font-size:12px;color:var(--mute);background:rgba(19,24,29,.7);padding:4px 10px;border-radius:6px}
+.scale{position:absolute;bottom:70px;right:16px;font-family:var(--f-mono);font-size:11px;color:var(--mute);display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.scale i{display:block;height:4px;border:1px solid var(--mute);border-top:0}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--mute);font-size:13px}
+@media (max-width:860px){
+  html,body{height:auto}
+  .app{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto}
+  .stage{height:62vh;min-height:360px;order:-1}
+  .panel{overflow:visible}
+  .hint{display:none}
+  .head h1{font-size:26px}
+}
+.head .tourBtn{margin-top:14px}
+.tourBtn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;font:inherit;font-weight:600;font-size:15px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:9px;padding:11px 14px;cursor:pointer;text-align:right}
+.tourBtn small{font-weight:500;font-size:12px;opacity:.75}
+.tourBtn:hover{filter:brightness(1.07)}
+.tourBtn:focus-visible,.tab:focus-visible,.prow:focus-visible,.pchip:focus-visible,.link:focus-visible,.term:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.box{border-radius:8px;padding:10px 12px;line-height:1.85;background:var(--raise);border:1px solid var(--line);color:#d5dbe0}
+.box>b{display:block;font-size:12px;color:var(--mute);font-weight:600;margin-bottom:3px}
+.box.simple{background:var(--ok-bg);border-color:var(--ok-line)}
+.box.simple>b{color:var(--ok-ink)}
+.box.warn{background:var(--warn-bg);border-color:var(--warn-line)}
+.box.warn>b{color:var(--accent)}
+.ul{margin:4px 0 0;padding-inline-start:18px;display:flex;flex-direction:column;gap:4px}
+.ol{margin:6px 0 0;padding-inline-start:20px;display:flex;flex-direction:column;gap:10px;line-height:1.8}
+.term{border-bottom:1px dashed var(--accent);cursor:help;border-radius:2px}
+.term:hover{background:rgba(226,162,90,.12)}
+.gpop{position:fixed;z-index:60;width:min(310px,calc(100vw - 32px));background:#0d1114;border:1px solid var(--accent);border-radius:9px;padding:11px 13px;line-height:1.75;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.5);direction:rtl}
+.gpop h4{margin:0 0 4px;font-size:14px;color:var(--accent)}
+.gpop p{margin:0;color:#d5dbe0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bench);z-index:2;padding-top:2px;overflow-x:auto;scrollbar-width:none}
+.tab{font:inherit;font-size:13.5px;color:var(--mute);background:none;border:0;border-bottom:2px solid transparent;padding:9px 11px;cursor:pointer;margin-bottom:-1px;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.tp{display:flex;flex-direction:column;gap:14px;padding-bottom:12px}
+.lead{margin:0;color:var(--mute);line-height:1.75}
+.h3{font-size:13px;color:var(--ink);font-weight:600;margin:0}
+.grp{display:flex;flex-direction:column;gap:6px}
+.grp>span{font-size:12px;color:var(--mute)}
+.prows{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.prow{font:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:right;background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);cursor:pointer;min-width:0}
+.prow b{font-size:13px;font-weight:600;line-height:1.4}
+.prow span{font-size:11.5px;color:var(--mute);line-height:1.5}
+.prow:hover{border-color:#3c4753}
+.prow[aria-pressed="true"]{border-color:var(--accent);background:#2a241c}
+details.tech{border-top:1px solid var(--line);padding-top:10px}
+details.tech summary{cursor:pointer;color:var(--accent);font-size:13px;font-weight:600}
+details.tech[open] summary{margin-bottom:8px}
+.link{font:inherit;background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.card>.link{align-self:flex-start;font-size:12.5px}
+.verdict{border-radius:8px;padding:10px 12px;border:1px solid var(--line);border-inline-start:4px solid var(--c);background:var(--raise);display:flex;flex-direction:column;gap:3px;line-height:1.8}
+.verdict b{font-size:12px;color:var(--mute);font-weight:600}
+.verdict strong{font-size:16px;color:var(--c)}
+.pgroups{display:flex;flex-direction:column;gap:12px}
+.pg{display:flex;flex-direction:column;gap:6px}
+.pg h4{margin:0;font-size:13px;display:flex;align-items:center;gap:7px}
+.pg h4 i{width:10px;height:10px;border-radius:2px;background:var(--c)}
+.pg p{margin:0;font-size:12.5px;color:var(--mute);line-height:1.6}
+.pchips{display:flex;flex-wrap:wrap;gap:5px;direction:ltr;justify-content:flex-end}
+.pchip{font-family:var(--f-mono);font-size:12px;border-radius:6px;padding:3px 8px;background:var(--raise);border:1px solid var(--line);border-left:3px solid var(--c);color:var(--ink);cursor:pointer}
+.pchip:hover{border-color:#3c4753;border-left-color:var(--c)}
+.sbox{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.sbox h3{margin:0;font-family:var(--f-display);font-size:17px}
+.sbox p{margin:0;line-height:1.8;color:#d5dbe0}
+.code{position:relative;min-width:0}
+.code pre{direction:ltr;text-align:left;background:#0b0e11;border:1px solid var(--line);border-radius:8px;padding:12px;padding-top:34px;overflow-x:auto;font-family:var(--f-mono);font-size:12px;line-height:1.65;margin:0;color:#dfe5ea;white-space:pre}
+.code .copy{position:absolute;top:6px;left:6px;font-size:12px;padding:3px 10px;background:var(--raise);border:1px solid var(--line)}
+.wire{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.wire li{background:var(--raise);border:1px solid var(--line);border-radius:7px;padding:7px 10px;line-height:1.7}
+.trouble{display:flex;flex-direction:column;gap:8px}
+.trouble div{border-bottom:1px solid var(--line);padding-bottom:8px;line-height:1.75}
+.trouble code{font-family:var(--f-mono);font-size:12px;color:var(--k-strap);direction:ltr;unicode-bidi:isolate}
+#gq{font:inherit;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--ink)}
+#gq:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.gitem{padding:10px 0;border-bottom:1px solid var(--line);line-height:1.8}
+.gitem b{display:block;color:var(--accent);font-size:14px}
+.gitem p{margin:0;color:#d5dbe0}
+.tour{position:absolute;top:64px;left:12px;width:min(400px,calc(100% - 24px));max-height:calc(100% - 140px);overflow:auto;background:rgba(14,18,22,.95);border:1px solid var(--accent);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;z-index:4;direction:rtl;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.tour .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+.tour .prog{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.tour .prog i{display:block;height:100%;background:var(--accent);transition:width .35s}
+.tour h3{font-family:var(--f-display);font-size:21px;margin:0;line-height:1.3}
+.tour p{margin:0;line-height:1.9;color:#dfe5ea}
+.tour .nav{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.tour .btn.primary{background:var(--accent);color:var(--accent-ink);font-weight:600;padding:7px 16px}
+.tour .btn.ghost{border-color:var(--line)}
+@media (max-width:860px){.tour{top:58px;max-height:calc(100% - 128px);padding:12px 14px}.tour h3{font-size:18px}.prows{grid-template-columns:1fr 1fr}}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app" dir="rtl">
+  <aside class="panel" id="panel">
+    <header class="head">
+      <div class="eyebrow">Teardown · 1 : 1 mm</div>
+      <h1>تشريح لوحة ESP32 <span>DevKitC</span></h1>
+      <p>نموذج ثلاثي الأبعاد لكل قطعة على اللوحة بحجمها الحقيقي، مع شرح بسيط يبدأ معك من الصفر. لا تحتاج أي خبرة سابقة في الإلكترونيات أو البرمجة.</p>
+      <div class="credit"><div class="who"><small>عمل الطالب</small>عبد العزيز فهد الجعيد</div><div class="links" id="creditLinks"><a href="https://github.com/0xazc0000e" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg><bdi>0xazc0000e</bdi> على GitHub</a><a href="https://t.me/afjo45" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2 1.8 11.7c-1-.3-1-1 .2-1.5L20.5 3c.9-.3 1.6.2 1.4 1.3z"/></svg><bdi>@afjo45</bdi> على تلقرام</a></div></div>
+      <button class="tourBtn" data-act="tour"><span>ابدأ الجولة التعليمية</span><small>16 خطوة · نحو 5 دقائق</small></button>
+    </header>
+    <section class="card" id="card" aria-live="polite"></section>
+    <div class="tabs" role="tablist" aria-label="أقسام الشرح">
+      <button class="tab" role="tab" data-tab="parts" aria-selected="true">القطع</button>
+      <button class="tab" role="tab" data-tab="pins" aria-selected="false">الأطراف</button>
+      <button class="tab" role="tab" data-tab="start" aria-selected="false">ابدأ هنا</button>
+      <button class="tab" role="tab" data-tab="gloss" aria-selected="false">المصطلحات</button>
+    </div>
+    <section class="tp" data-tp="parts">
+      <p class="lead">انقر أي قطعة هنا أو على النموذج مباشرة لتقرأ عنها. القطع مقسومة حسب مكانها: داخل الوحدة الفضية، أو على اللوحة السوداء حولها.</p>
+      <div id="list"></div>
+    </section>
+    <section class="tp" data-tp="pins" hidden>
+      <div id="prules"></div>
+      <div class="pgroups" id="pgroups"></div>
+      <h3 class="h3">خريطة الأطراف من الأعلى (الهوائي في الأعلى)</h3>
+      <div class="pinmap" id="pinmap"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <section class="tp" data-tp="start" hidden id="startTab"></section>
+    <section class="tp" data-tp="gloss" hidden>
+      <label for="gq" class="h3">ابحث عن مصطلح</label>
+      <input id="gq" type="search" placeholder="مثال: GPIO أو فولت" autocomplete="off">
+      <div id="glist"></div>
+    </section>
+  </aside>
+
+  <main class="stage" id="stage">
+    <div class="loading" id="loading">جارٍ بناء النموذج…</div>
+    <div class="labels" id="labels"></div>
+    <div class="tip" id="tip" hidden></div>
+    <div class="tour" id="tour" hidden role="dialog" aria-label="الجولة التعليمية"></div>
+    <div class="bar views" role="group" aria-label="زوايا الرؤية">
+      <button class="btn" data-view="iso" aria-pressed="true">منظور</button>
+      <button class="btn" data-view="top">علوي</button>
+      <button class="btn" data-view="bottom">سفلي</button>
+      <button class="btn" data-view="module">الوحدة</button>
+      <button class="btn" data-view="usb">USB</button>
+    </div>
+    <div class="stamp">عمل الطالب: عبد العزيز فهد الجعيد</div>
+    <div class="hint">اسحب للتدوير · العجلة للتقريب · انقر أي قطعة</div>
+    <div class="scale"><span>10 مم</span><i id="scalebar" style="width:60px"></i></div>
+    <div class="bar hud">
+      <div class="slider">
+        <label for="explode">فصل الطبقات</label>
+        <input type="range" id="explode" min="0" max="100" value="0">
+        <output id="exOut">0%</output>
+      </div>
+      <button class="btn" id="xray" aria-pressed="false">رؤية تحت الغطاء</button>
+      <button class="btn" id="power" aria-pressed="true">الطاقة</button>
+      <button class="btn" id="labelsBtn" aria-pressed="true">التسميات</button>
+    </div>
+  </main>
+</div>
+
+<div class="gpop" id="gpop" hidden role="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(async function(){
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+try{ await Promise.race([Promise.all([document.fonts.load('700 40px "JetBrains Mono"'),document.fonts.load('500 40px "JetBrains Mono"'),document.fonts.load('700 40px "Noto Kufi Arabic"')]), new Promise(r=>setTimeout(r,1800))]); }catch(e){}
+
+/* ---------------- data ---------------- */
+const INFO = {
+  module:{n:'وحدة ESP32‑WROOM‑32',c:'الوحدة',d:'وحدة جاهزة ومعتمدة تجمع الشريحة والذاكرة والكريستال والهوائي على لوح صغير. تُلحم على اللوحة الحاملة عبر 38 وسادة على حوافها.',s:[['الأبعاد','18 × 25.5 × 3.1 mm'],['لوح الوحدة','0.8 mm متعدد الطبقات'],['التغذية','3.0 – 3.6 V'],['استهلاك الإرسال','حتى ≈ 240 mA'],['النطاق','2.4 GHz']]},
+  shield:{n:'الغطاء المعدني (RF Shield)',c:'الوحدة',d:'صفيحة معدنية مختومة تحجب التداخل الكهرومغناطيسي عن دوائر التردد الراديوي، وتحمل علامة الطراز ورقم اعتماد FCC المحفور بالليزر. حوافها ملحومة بأرضي الوحدة.',s:[['الأبعاد','16.8 × 17.4 mm'],['الارتفاع','2.3 mm فوق لوح الوحدة'],['المادة','فولاذ/نيكل فضي مطلي'],['الاتصال','الأرضي GND']]},
+  soc:{n:'شريحة ESP32‑D0WDQ6',c:'داخل الوحدة',d:'قلب النظام: معالج ثنائي النواة Xtensa LX6 مع راديو Wi‑Fi وبلوتوث مدمجين، ومعالج مساعد منخفض الاستهلاك (ULP) يعمل أثناء النوم العميق.',s:[['الأنوية','2 × Xtensa LX6'],['التردد','حتى 240 MHz'],['SRAM','520 KB'],['ROM','448 KB'],['Wi‑Fi','802.11 b/g/n'],['بلوتوث','v4.2 BR/EDR + BLE'],['الغلاف','QFN48 · 6 × 6 mm']]},
+  flash:{n:'ذاكرة SPI Flash',c:'داخل الوحدة',d:'تخزن البرنامج ونظام الملفات. يقرأ المعالج التعليمات منها مباشرة عبر ناقل SPI رباعي مع ذاكرة تخزين مؤقت، ولهذا الأطراف GPIO6 إلى GPIO11 محجوزة لها.',s:[['السعة','4 MB (32 Mbit)'],['الواجهة','Quad SPI · 40/80 MHz'],['الأطراف','GPIO6 – GPIO11'],['الغلاف','WSON8 · 6 × 5 mm']]},
+  xtal:{n:'الكريستال 40 MHz',c:'داخل الوحدة',d:'مذبذب كوارتز يولد ساعة مرجعية ثابتة للمعالج ولدارة الراديو. دقة هذا التردد هي ما يسمح لـ Wi‑Fi بالبقاء على القناة الصحيحة.',s:[['التردد','40.000 MHz'],['الغلاف','3.2 × 2.5 mm SMD'],['الغطاء','معدني ملحوم بالحرارة']]},
+  antenna:{n:'هوائي PCB (MIFA)',c:'الوحدة',d:'مسار نحاسي متعرّج على شكل F مقلوب مطبوع على لوح الوحدة. طوله الكهربائي مضبوط لربع طول موجة 2.4 GHz. لا يوجد نحاس تحته على اللوحة الحاملة، ويجب إبعاد المعادن عنه.',s:[['النوع','Meandered Inverted‑F'],['النطاق','2.400 – 2.483 GHz'],['الممانعة','50 Ω'],['منطقة الحظر','≈ 6 × 18 mm']]},
+  castell:{n:'الوسادات نصف الدائرية',c:'الوحدة',d:'ثقوب مطلية قُطعت من منتصفها على حافة الوحدة (Castellated). تُلحم سطحياً على اللوحة الحاملة، ويظهر اللحام على جانبها فيمكن فحصه بالعين.',s:[['العدد','38 وسادة'],['الخطوة','1.27 mm'],['الطلاء','ذهب ENIG']]},
+  modpass:{n:'مكونات المطابقة والفصل',c:'داخل الوحدة',d:'مكثفات وملفات صغيرة جداً لفصل ضوضاء التغذية عن الشريحة، ولمطابقة ممانعة مخرج الراديو مع الهوائي (50 Ω) لنقل أكبر قدر من الطاقة.',s:[['المقاس','0402 · 1.0 × 0.5 mm'],['الأنواع','MLCC وملفات RF']]},
+  pcb:{n:'اللوحة الحاملة (PCB)',c:'اللوحة الحاملة',d:'لوح من ألياف زجاجية FR‑4 بقناع لحام أسود وطباعة حريرية بيضاء. يحمل الوحدة ودوائر التغذية والبرمجة، ويوصل أطراف الوحدة إلى صفي الدبابيس. قرّب الكاميرا لترى مسارات النحاس البارزة تحت القناع.',s:[['الأبعاد','54.4 × 27.9 mm'],['السماكة','1.6 mm'],['الطبقات','طبقتان نحاسيتان'],['تشطيب الوسادات','ذهب ENIG']]},
+  usb:{n:'منفذ Micro‑USB',c:'اللوحة الحاملة',d:'يوفر تغذية 5V والاتصال التسلسلي بالحاسوب للبرمجة والمراقبة. أرجل الغلاف المعدني تمر عبر اللوحة وتُلحم لتتحمل شد الكابل.',s:[['النوع','Micro‑B'],['الأطراف','VBUS · D− · D+ · ID · GND'],['الجهد','5 V'],['الأبعاد','7.5 × 5.0 × 2.6 mm']]},
+  cp2102:{n:'محول USB إلى UART · CP2102',c:'اللوحة الحاملة',d:'يحول بيانات USB إلى منفذ تسلسلي متصل بـ GPIO1 وGPIO3. يتحكم أيضاً بخطي DTR وRTS لإدخال الشريحة في وضع البرمجة تلقائياً. بعض النسخ الرخيصة تستخدم CH340C بدلاً منه.',s:[['الغلاف','QFN28 · 5 × 5 mm'],['السرعة','حتى 921600 baud'],['الخطوط','TXD · RXD · DTR · RTS'],['التغذية','من VBUS داخلياً']]},
+  ldo:{n:'منظم الجهد AMS1117‑3.3',c:'اللوحة الحاملة',d:'منظم خطي يخفض 5V القادمة من USB إلى 3.3V لتغذية الوحدة. اللسان المعدني الكبير هو المخرج وهو في الوقت نفسه مبدد للحرارة.',s:[['الخرج','3.3 V'],['التيار الأقصى','1 A'],['هبوط الجهد','≈ 1.1 V'],['الغلاف','SOT‑223']]},
+  diode:{n:'ثنائي الحماية',c:'اللوحة الحاملة',d:'ثنائي شوتكي بين VBUS وخط 5V. يمنع رجوع التيار إلى الحاسوب إذا غذّيت اللوحة من طرف 5V وكابل USB متصل.',s:[['النوع','Schottky'],['الغلاف','SOD‑123'],['هبوط الجهد','≈ 0.3 – 0.4 V']]},
+  autoreset:{n:'ترانزستورات إعادة الضبط التلقائي',c:'اللوحة الحاملة',d:'زوج ترانزستورات NPN متقاطعين يحولان إشارتي DTR وRTS إلى تسلسل على EN وGPIO0، فتدخل الشريحة وضع البرمجة دون أن تضغط الأزرار.',s:[['النوع','NPN · S8050'],['العلامة','J3Y'],['الغلاف','SOT‑23']]},
+  en:{n:'زر EN (إعادة التشغيل)',c:'اللوحة الحاملة',d:'يوصل طرف EN بالأرض فتتوقف الشريحة، وعند تركه تعيد الإقلاع. EN مسحوب للأعلى بمقاومة 10 kΩ ومكثف يؤخر الإقلاع حتى تستقر التغذية. انقره لتراه ينضغط.',s:[['النوع','زر لحظي SMD'],['الطرف','CHIP_PU / EN'],['الحالة الافتراضية','مرتفع (يعمل)']]},
+  boot:{n:'زر BOOT',c:'اللوحة الحاملة',d:'يوصل GPIO0 بالأرض. إذا كان مضغوطاً لحظة الإقلاع تدخل الشريحة وضع تحميل البرنامج عبر UART. بعد الإقلاع يمكن استخدامه زراً عاماً.',s:[['الطرف','GPIO0'],['الاستخدام','وضع البرمجة / زر عام']]},
+  led:{n:'مؤشر الطاقة',c:'اللوحة الحاملة',d:'ثنائي باعث للضوء أحمر يضيء عند وجود 3.3V عبر مقاومة تحديد تيار. غير متصل بأي طرف GPIO، فلا يمكن التحكم به برمجياً.',s:[['المقاس','0805 · 2.0 × 1.25 mm'],['اللون','أحمر ≈ 625 nm'],['التيار','بضعة mA']]},
+  caps:{n:'مكثفات الفصل',c:'اللوحة الحاملة',d:'مكثفات خزفية متعددة الطبقات قرب كل طرف تغذية. تمتص الضوضاء وتغذي قمم التيار اللحظية، خاصة أثناء إرسال Wi‑Fi حين يقفز الاستهلاك.',s:[['النوع','MLCC'],['المقاسات','0402 · 0603 · 0805'],['قيم شائعة','100 nF · 10 µF · 22 µF']]},
+  res:{n:'المقاومات',c:'اللوحة الحاملة',d:'مقاومات سحب على EN وGPIO0، ومقاومات قاعدة الترانزستورات، ومقاومة تحديد تيار المؤشر. يُطبع رمز القيمة على سطحها الأسود.',s:[['المقاسات','0402 · 0603'],['أمثلة','103 = 10 kΩ · 102 = 1 kΩ']]},
+  headers:{n:'صفّا الدبابيس 2 × 19',c:'اللوحة الحاملة',d:'دبابيس نحاسية مطلية مثبتة في قاعدة بلاستيكية، تمر عبر ثقوب مطلية وتُلحم من الأعلى. مرّر المؤشر على أي دبوس، أو اختر من خريطة الأطراف.',s:[['العدد','38 طرفاً'],['الخطوة','2.54 mm'],['بين الصفين','25.4 mm'],['مقطع الدبوس','0.64 × 0.64 mm']]}
+};
+const GROUPS=[['الوحدة ESP32‑WROOM‑32',['module','shield','soc','flash','xtal','antenna','castell','modpass']],['اللوحة الحاملة',['pcb','usb','cp2102','ldo','diode','autoreset','en','boot','led','caps','res','headers']]];
+const PL=['3V3','EN','VP','VN','34','35','32','33','25','26','27','14','12','GND','13','SD2','SD3','CMD','5V'];
+const PR=['GND','23','22','TX','RX','21','GND','19','18','5','17','16','4','0','2','15','SD1','SD0','CLK'];
+const PIN={'3V3':['3.3V','مخرج 3.3V من المنظم؛ يكفي لتغذية حساسات خفيفة','pwr'],'EN':['EN · CHIP_PU','تفعيل الشريحة؛ وصله بالأرض يعيد التشغيل','strap'],'VP':['GPIO36','ADC1_CH0 · SENSOR_VP · إدخال فقط','in'],'VN':['GPIO39','ADC1_CH3 · SENSOR_VN · إدخال فقط','in'],'34':['GPIO34','ADC1_CH6 · إدخال فقط، بلا مقاومة سحب داخلية','in'],'35':['GPIO35','ADC1_CH7 · إدخال فقط','in'],'32':['GPIO32','ADC1_CH4 · TOUCH9 · XTAL32_P','io'],'33':['GPIO33','ADC1_CH5 · TOUCH8 · XTAL32_N','io'],'25':['GPIO25','ADC2_CH8 · DAC1','io'],'26':['GPIO26','ADC2_CH9 · DAC2','io'],'27':['GPIO27','ADC2_CH7 · TOUCH7','io'],'14':['GPIO14','ADC2_CH6 · TOUCH6 · HSPI_CLK · يخرج نبضات عند الإقلاع','io'],'12':['GPIO12','ADC2_CH5 · TOUCH5 · HSPI_MISO · إن كان مرتفعاً عند الإقلاع يغيّر جهد الفلاش','strap'],'GND':['GND','الأرضي المشترك','gnd'],'13':['GPIO13','ADC2_CH4 · TOUCH4 · HSPI_MOSI','io'],'SD2':['GPIO9','متصل بذاكرة الفلاش؛ لا تستخدمه','flash'],'SD3':['GPIO10','متصل بذاكرة الفلاش؛ لا تستخدمه','flash'],'CMD':['GPIO11','متصل بذاكرة الفلاش؛ لا تستخدمه','flash'],'5V':['5V','دخل أو خرج 5V من منفذ USB عبر ثنائي الحماية','pwr'],'23':['GPIO23','VSPI_MOSI','io'],'22':['GPIO22','SCL الافتراضي لـ I²C في Arduino','io'],'TX':['GPIO1','U0TXD · متصل بمحول USB؛ تمر عليه الطباعة التسلسلية','uart'],'RX':['GPIO3','U0RXD · متصل بمحول USB','uart'],'21':['GPIO21','SDA الافتراضي لـ I²C في Arduino','io'],'19':['GPIO19','VSPI_MISO','io'],'18':['GPIO18','VSPI_CLK','io'],'5':['GPIO5','VSPI_CS · طرف ربط يضبط توقيت SDIO','strap'],'17':['GPIO17','U2TXD','io'],'16':['GPIO16','U2RXD','io'],'4':['GPIO4','ADC2_CH0 · TOUCH0','io'],'0':['GPIO0','زر BOOT · منخفض عند الإقلاع يعني وضع البرمجة','strap'],'2':['GPIO2','ADC2_CH2 · TOUCH2 · يجب أن يبقى منخفضاً أثناء البرمجة','strap'],'15':['GPIO15','ADC2_CH3 · TOUCH3 · HSPI_CS · يكتم رسائل الإقلاع إن كان منخفضاً','strap'],'SD1':['GPIO8','متصل بذاكرة الفلاش؛ لا تستخدمه','flash'],'SD0':['GPIO7','متصل بذاكرة الفلاش؛ لا تستخدمه','flash'],'CLK':['GPIO6','ساعة ذاكرة الفلاش؛ لا تستخدمه','flash']};
+const KIND={pwr:['تغذية','--k-pwr'],gnd:['أرضي','--k-gnd'],in:['إدخال فقط','--k-in'],io:['متعدد الأغراض','--k-io'],strap:['طرف ربط','--k-strap'],flash:['محجوز للفلاش','--k-flash'],uart:['تسلسلي','--k-uart']};
+
+/* ---------------- beginner layer ---------------- */
+const BEG={
+  module:{s:'العقل الكامل للوحة: المعالج والذاكرة والهوائي',e:'هذه القطعة الفضية هي «العقل» الحقيقي. كل ما حولها على اللوحة السوداء موجود فقط لتشغيلها وتوصيلها بك وبحاسوبك.',a:'مثل محرك السيارة: اللوحة السوداء هي الهيكل والعجلات، أما الوحدة فهي المحرك الذي يقوم بالعمل كله.',w:'عندما تكتب برنامجاً وترفعه، يُحفظ ويعمل داخل هذه الوحدة. وعندما تنتهي من مشروع وتريد جهازاً صغيراً نهائياً، يمكنك شراء الوحدة وحدها ولحامها على لوحتك الخاصة.',m:'لا تضع اللوحة داخل علبة معدنية أو فوق سطح معدني، فسيضعف اتصال Wi‑Fi كثيراً.'},
+  shield:{s:'غطاء يحمي الدوائر الحساسة من التشويش',e:'غطاء معدني يحمي الدوائر الحساسة تحته من الإشارات الكهربائية المزعجة القادمة من الخارج، ويمنعها هي أيضاً من إزعاج الأجهزة الأخرى.',a:'مثل غطاء القدر: يحفظ ما بداخله ولا يسمح لشيء بالدخول أو الخروج.',w:'لن تتعامل معه أبداً. الكتابة المحفورة عليه تخبرك بطراز الوحدة (WROOM‑32) وأنها معتمدة رسمياً.',m:'لا تحاول نزعه، فستتلف الوحدة. ومن الطبيعي أن يصبح دافئاً قليلاً أثناء العمل.'},
+  soc:{s:'المعالج: ينفذ أوامر برنامجك',e:'المعالج نفسه: شريحة مربعة طولها 6 مم فقط، تنفذ أوامر برنامجك ملايين المرات في الثانية، وفي داخلها أيضاً راديو Wi‑Fi وبلوتوث.',a:'مثل الدماغ: يفكر ويقرر ويحرك الأطراف، ويستطيع أيضاً أن يتكلم لاسلكياً.',w:'عبارة «ثنائي النواة 240 MHz» تعني أنه يستطيع تنفيذ عملين في الوقت نفسه، وأنه أسرع بكثير من Arduino Uno الشهير (16 MHz).',m:'ذاكرة العمل فيه (520 KB) كبيرة بالنسبة لمتحكم، لكنها صغيرة جداً مقارنة بالحاسوب. لا تحاول تحميل صور أو ملفات ضخمة دفعة واحدة.'},
+  flash:{s:'يحفظ برنامجك حتى بعد فصل الكهرباء',e:'هنا يُحفظ برنامجك. لا يُمسح عند فصل الكهرباء، فتعمل اللوحة ببرنامجك كلما وصلتها بالطاقة.',a:'مثل ذاكرة هاتفك التي تحفظ الصور: تبقى حتى لو أطفأت الهاتف.',w:'عند ضغط زر الرفع في Arduino IDE يُكتب برنامجك هنا. سعة 4MB تكفي لبرامج كبيرة جداً، ويمكن أن تحفظ فيها أيضاً إعدادات أو صفحات ويب صغيرة.',m:'الأطراف المكتوب عليها SD0 وSD1 وSD2 وSD3 وCLK وCMD على حافة اللوحة متصلة بهذه الذاكرة. إن وصلت بها أي شيء ستتوقف اللوحة عن العمل.'},
+  xtal:{s:'ساعة دقيقة تضبط إيقاع المعالج',e:'قطعة كوارتز صغيرة تهتز 40 مليون مرة في الثانية بانتظام شديد، فتعطي المعالج «إيقاعاً» ثابتاً يعمل عليه.',a:'مثل المترونوم الذي يضبط إيقاع العازف، أو دقات قلب الساعة.',w:'بفضله تكون الأوقات في برنامجك دقيقة، فعندما تكتب delay(1000) تنتظر اللوحة ثانية واحدة بالضبط، ويبقى Wi‑Fi على تردده الصحيح.',m:''},
+  antenna:{s:'هوائي Wi‑Fi والبلوتوث',e:'الخط المتعرج على طرف الوحدة هو الهوائي. ليس سلكاً منفصلاً، بل نحاس مطبوع على اللوحة نفسها بشكل محسوب بدقة.',a:'مثل أذن اللوحة وفمها في الكلام اللاسلكي.',w:'هو سبب قدرة اللوحة على الاتصال بشبكة منزلك وبهاتفك. مداه داخل البيت عادةً عشرات الأمتار، ويقل مع الجدران السميكة.',m:'لا تضع فوقه أسلاكاً أو معدناً أو يدك، ولا تدفنه في لوح التجارب. وفي علبة مشروعك اجعل هذا الطرف نحو الخارج.'},
+  castell:{s:'نقاط لحام الوحدة على اللوحة',e:'الأنصاف الذهبية على حافة الوحدة هي نقاط لحام. من خلالها تُثبت الوحدة على اللوحة السوداء وتنتقل الإشارات بينهما.',a:'مثل المسامير التي تثبت الرف وفي الوقت نفسه تمرر الكهرباء.',w:'تهمك فقط إن قررت لاحقاً تصميم لوحتك الخاصة واستخدام الوحدة وحدها.',m:'إن رأيت لحاماً مكسوراً أو متصلاً بين نقطتين متجاورتين، فقد يفسر ذلك طرفاً لا يعمل.'},
+  modpass:{s:'قطع صغيرة تنظف الكهرباء',e:'قطع صغيرة جداً، بحجم حبة الرمل تقريباً، تنظف الكهرباء الداخلة إلى المعالج وتضبط الإشارة الذاهبة إلى الهوائي.',a:'مثل فلتر الماء الصغير قبل الصنبور.',w:'لن تتعامل معها، لكنها سبب استقرار الوحدة وقوة إشارتها.',m:''},
+  pcb:{s:'اللوح الذي يحمل ويوصل كل القطع',e:'اللوح الأسود الذي يحمل كل شيء. على سطحه خطوط نحاسية رفيعة تعمل كأسلاك تصل القطع ببعضها، والطلاء الأسود فوقها عازل يحميها.',a:'مثل خريطة مدينة: القطع هي المباني، والخطوط النحاسية هي الطرق بينها.',w:'الكتابة البيضاء عليه (3V3 وGND و23...) هي أسماء الأطراف، وهي أهم ما ستقرؤه عندما توصل الأسلاك. قرّب الكاميرا لترى الخطوط النحاسية البارزة تحت الطلاء.',m:'لا تضع اللوحة وهي موصولة فوق سطح معدني أو قرب الماء أو قطع أسلاك متناثرة، فقد يحدث تماس يحرقها.'},
+  usb:{s:'تدخل منه الكهرباء وبرنامجك',e:'من هنا يدخل كل شيء: الكهرباء من الحاسوب أو الشاحن، وبرنامجك من الحاسوب.',a:'مثل الباب الرئيسي للبيت: منه يدخل الناس والأغراض.',w:'تحتاج كابل Micro‑USB، وهو الكابل القديم لهواتف أندرويد. يمكنك تشغيل اللوحة من شاحن هاتف أو من باور بانك بعد رفع البرنامج.',m:'أشهر مشكلة للمبتدئين: كابل «للشحن فقط» لا ينقل البيانات. إن لم يتعرف الحاسوب على اللوحة، جرّب كابلاً آخر قبل أي شيء.'},
+  cp2102:{s:'مترجم بين الحاسوب والمعالج',e:'هذه الشريحة مترجم. الحاسوب يتكلم «لغة USB»، والمعالج يتكلم لغة أبسط اسمها الاتصال التسلسلي، وهي تترجم بينهما في الاتجاهين.',a:'مثل مترجم فوري بين شخصين لا يتكلمان اللغة نفسها.',w:'عندما توصل اللوحة يظهر في حاسوبك منفذ جديد (مثل COM3 في ويندوز). هذا المنفذ هو هذه الشريحة. ومن خلالها أيضاً ترى رسائل برنامجك في الشاشة التسلسلية.',m:'إن لم يظهر المنفذ، فقد تحتاج تثبيت تعريف CP210x من موقع Silicon Labs. وبعض اللوحات الأرخص تستخدم شريحة CH340 وتحتاج تعريفها هي.'},
+  ldo:{s:'يخفض 5V إلى 3.3V',e:'يأخذ كهرباء USB بجهد 5 فولت ويحولها إلى 3.3 فولت ثابتة، وهو الجهد الذي يعمل عليه المعالج.',a:'مثل صمام تخفيض ضغط الماء: يدخل الماء بضغط عالٍ ويخرج بضغط ثابت أقل، والفرق يتحول إلى حرارة.',w:'طرف 3V3 على حافة اللوحة يخرج من هذه القطعة. يمكنك استخدامه لتغذية الحساسات والشاشات الصغيرة.',m:'لا تغذي منه محركات أو شرائط LED طويلة. سيسخن كثيراً، وقد تعيد اللوحة التشغيل فجأة. المحركات تحتاج مصدر طاقة منفصلاً.'},
+  diode:{s:'يمنع رجوع الكهرباء إلى حاسوبك',e:'قطعة تسمح للكهرباء بالمرور في اتجاه واحد فقط: من USB إلى اللوحة، لا العكس.',a:'مثل باب دوّار لا يدور إلا في اتجاه واحد.',w:'يحمي منفذ USB في حاسوبك إن وصلت مصدر 5V آخر بطرف 5V بينما الكابل متصل.',m:'لا تصل بطرف 5V أكثر من 5 فولت، مثل بطارية 9 فولت مباشرة. ستحرق المنظم وربما المعالج.'},
+  autoreset:{s:'يضغط الأزرار عنك عند رفع البرنامج',e:'مفتاحان إلكترونيان صغيران يضغطان زري BOOT وEN نيابة عنك في اللحظة المناسبة أثناء رفع البرنامج.',a:'مثل مساعد يقف بجانبك ويضغط الأزرار بدلاً منك في التوقيت الصحيح.',w:'بفضلهما تضغط زر الرفع فقط والباقي تلقائي. أثناء عملهما ترى في نافذة الرفع رسالة Connecting.... بنقاط متتالية.',m:'إن بقيت رسالة Connecting.... بلا تقدم، فاضغط زر BOOT مطولاً حتى تبدأ النسبة المئوية بالظهور.'},
+  en:{s:'زر إعادة التشغيل',e:'زر يعيد تشغيل برنامجك من البداية، كأنك فصلت الكهرباء ووصلتها.',a:'مثل زر إعادة تشغيل الحاسوب.',w:'استخدمه بعد رفع البرنامج إن لم يبدأ، أو عندما تريد رؤية أول الرسائل في الشاشة التسلسلية من جديد.',m:'لا يمسح برنامجك. البرنامج يبقى محفوظاً في الفلاش ويعمل من جديد.'},
+  boot:{s:'زر وضع البرمجة',e:'زر يقول للمعالج: «لا تشغّل البرنامج القديم، استعد لاستقبال برنامج جديد».',a:'مثل وضع «الاستقبال» في جهاز اللاسلكي.',w:'تحتاجه فقط إن فشل الرفع التلقائي. وبعد التشغيل يمكنك قراءته في برنامجك كزر عادي على الطرف GPIO0.',m:'إن ضغطت EN وBOOT مضغوط، تدخل اللوحة وضع البرمجة وتبدو كأنها «ماتت». اضغط EN وحده لتعود إلى برنامجك.'},
+  led:{s:'يضيء عندما تصل الكهرباء',e:'ضوء أحمر صغير يخبرك أن الكهرباء وصلت إلى اللوحة.',a:'مثل لمبة التشغيل الحمراء في التلفاز.',w:'هو أول ما تنظر إليه عند توصيل اللوحة. إن لم يضئ فالمشكلة في الكابل أو المنفذ، أو في تماس بين أسلاكك.',m:'لا يمكنك التحكم بهذا الضوء من برنامجك. لوحة DevKitC لا تحتوي ضوءاً قابلاً للبرمجة، بعكس لوحات أخرى تضعه على GPIO2. لتجربة الإضاءة صل LED خارجياً.'},
+  caps:{s:'خزانات كهرباء صغيرة',e:'خزانات كهرباء صغيرة جداً قرب كل قطعة. عندما تحتاج القطعة كهرباء فجأة تعطيها فوراً.',a:'مثل خزان الماء على سطح البيت: يعطيك الماء فوراً حتى لو ضعف ضغط الشبكة لحظة.',w:'المعالج يستهلك كهرباء أكثر فجأة عند تشغيل Wi‑Fi. إن رأيت رسالة Brownout وأعادت اللوحة التشغيل، فجرّب كابلاً أقصر وأجود.',m:''},
+  res:{s:'تحد من مرور الكهرباء',e:'قطع تحد من مرور الكهرباء بمقدار محدد. الرقم المطبوع عليها هو قيمتها.',a:'مثل تضييق أنبوب الماء ليقل الماء المار فيه.',w:'طريقة قراءة الرقم: 103 تعني 10 وبعدها ثلاثة أصفار، أي 10000 أوم. ستستخدم مقاومات مشابهة في مشاريعك، مثل مقاومة 220 أوم مع كل LED.',m:'توصيل LED بطرف مباشرة دون مقاومة قد يحرق الـLED أو يتلف الطرف.'},
+  headers:{s:'هنا توصل الحساسات والأضواء',e:'الدبابيس على الجانبين هي طريقك لتوصيل أي شيء باللوحة: حساسات، أضواء، شاشات، أزرار، ومحركات عبر دوائر قيادة.',a:'مثل مقابس الكهرباء في الجدار، لكن لكل مقبس اسم ووظيفة.',w:'تغرس اللوحة في لوح التجارب، ثم توصل الأسلاك في الثقوب المجاورة لكل دبوس. افتح تبويب «الأطراف» لتعرف أيها آمن للاستخدام.',m:'أطراف ESP32 تعمل بجهد 3.3V. إشارة 5V من حساس قديم قد تتلفها. وانتبه: اللوحة عريضة وتغطي ثقوب أحد جانبي لوح التجارب العادي، فاستخدم لوحين متجاورين.'}
+};
+const GLOSS=[
+ {k:'demo',hide:1,t:'هكذا تعمل المصطلحات',d:'كلما رأيت كلمة تحتها خط منقط، اضغطها لتظهر هذه النافذة بشرح قصير. اضغط في أي مكان آخر لإغلاقها. وكل المصطلحات مجموعة في تبويب «المصطلحات».'},
+ {k:'gpio',t:'GPIO',r:/GPIO\d*/,d:'اختصار General Purpose Input/Output، أي «طرف متعدد الأغراض». تبرمجه ليكون مدخلاً يقرأ زراً أو حساساً، أو مخرجاً يشغل ضوءاً. الرقم بعده هو اسمه، مثل GPIO23.'},
+ {k:'adc',t:'ADC',r:/ADC\d?(?:_CH\d)?/,d:'محول تناظري إلى رقمي. يقرأ جهداً متدرجاً، مثل مقبض الصوت أو حساس الضوء، ويحوّله إلى رقم من 0 إلى 4095 يفهمه برنامجك.'},
+ {k:'dac',t:'DAC',r:/DAC\d?/,d:'العكس: يحول رقماً من برنامجك إلى جهد متدرج بدل التشغيل والإطفاء فقط. يمكنه إخراج صوت بسيط.'},
+ {k:'touch',t:'TOUCH',r:/TOUCH\d?/,d:'أطراف تحس بلمس الإصبع مباشرة دون زر، بقياس تغير بسيط في الشحنة الكهربائية. يمكنك صنع أزرار لمس من قطعة ألمنيوم وسلك.'},
+ {k:'pwm',t:'PWM',r:/PWM/,d:'تشغيل وإطفاء سريع جداً للطرف. بتغيير نسبة وقت التشغيل تتحكم بشدة إضاءة LED أو سرعة محرك. كل أطراف الإخراج في ESP32 تدعمه.'},
+ {k:'serial',t:'الشاشة التسلسلية',r:/الشاشة التسلسلية|Serial Monitor/,d:'نافذة في Arduino IDE تعرض الرسائل التي يرسلها برنامجك عبر Serial.println. أهم أداة لتعرف ما يحدث داخل اللوحة.'},
+ {k:'uart',t:'UART · TX · RX',r:/UART|U[02][TR]XD|[\u0600-\u06FF]*تسلسلي[\u0600-\u06FF]*/,d:'طريقة تواصل بسيطة عبر سلكين: TX للإرسال وRX للاستقبال. هكذا يتحدث المعالج مع الحاسوب. سلك TX في جهاز يوصل بـRX في الآخر.'},
+ {k:'spi',t:'SPI',r:/[HV]SPI_\w+|Quad SPI|SPI/,d:'طريقة تواصل سريعة عبر نحو 4 أسلاك. تستخدمها الشاشات الملونة وبطاقات الذاكرة SD.'},
+ {k:'i2c',t:'I²C · SDA · SCL',r:/I²C|SDA|SCL/,d:'طريقة تواصل عبر سلكين فقط: SDA للبيانات وSCL للتوقيت. يمكن وصل عدة حساسات على السلكين نفسيهما، ولكل حساس «عنوان» مختلف.'},
+ {k:'wifi',t:'Wi‑Fi',r:/Wi[‑-]Fi/,d:'الاتصال اللاسلكي بشبكة الإنترنت في منزلك، تماماً مثل هاتفك. ESP32 يعمل على تردد 2.4 GHz فقط، لا 5 GHz، فاختر الشبكة المناسبة في الراوتر.'},
+ {k:'bt',t:'بلوتوث · BLE',r:/[\u0600-\u06FF]*بلوتوث|BLE/,d:'اتصال لاسلكي قصير المدى، أمتار قليلة، مع الهاتف أو أجهزة أخرى. BLE نسخة موفرة جداً للطاقة.'},
+ {k:'hz',t:'MHz · GHz',r:/[MG]Hz/,d:'الهرتز يعني «مرة في الثانية». MHz مليون مرة، وGHz مليار مرة. 240 MHz تعني أن المعالج ينفذ نحو 240 مليون خطوة في الثانية.'},
+ {k:'v',t:'V · الفولت',r:/\d(?:\.\d)?\s?V(?![A-Za-z0-9])|[\u0600-\u06FF]*فولت/,d:'الفولت يقيس «ضغط» الكهرباء، مثل ضغط الماء في الأنبوب. المعالج يعمل على 3.3V، وUSB يعطي 5V.'},
+ {k:'ma',t:'mA · ميلي أمبير',r:/(?<![A-Za-z])mA(?![A-Za-z])/,d:'الأمبير يقيس «كمية» الكهرباء المتدفقة، مثل كمية الماء. mA جزء من ألف منه. LED عادي يحتاج نحو 10 إلى 20 mA.'},
+ {k:'gnd',t:'GND · الأرضي',r:/GND|[\u0600-\u06FF]*الأرض[\u0600-\u06FF]*/,d:'نقطة الصفر في الدائرة. الكهرباء تخرج من طرف التغذية وتعود إلى GND. كل الأجهزة الموصولة ببعضها يجب أن تشترك في GND نفسه.'},
+ {k:'vbus',t:'VBUS',r:/VBUS/,d:'سلك 5V داخل كابل USB، أي الكهرباء القادمة من الحاسوب أو الشاحن.'},
+ {k:'pcb',t:'PCB · لوحة الدارة',r:/PCB/,d:'لوحة الدارة المطبوعة: لوح عازل عليه خطوط نحاسية رفيعة تعمل كأسلاك بين القطع.'},
+ {k:'smd',t:'SMD',r:/SMD/,d:'قطعة تُلحم على سطح اللوح مباشرة دون أرجل طويلة تخترقه. صغيرة جداً وتُركب بالآلات.'},
+ {k:'pkg',t:'الغلاف (QFN · SOT · …)',r:/QFN\d*|WSON\d*|SOT[‑-]\d+|SOD[‑-]\d+/,d:'اسم شكل جسم القطعة وحجمها وطريقة أرجلها، مثل مقاسات الأحذية. لا يغير وظيفتها، بل حجمها وطريقة لحامها.'},
+ {k:'size',t:'0402 · 0603 · 0805',r:/\b(?:0402|0603|0805)\b/,d:'مقاسات القطع الصغيرة بالبوصة: 0402 تعني 0.04 × 0.02 بوصة، أي نحو 1.0 × 0.5 مم. كلما صغر الرقم صغرت القطعة.'},
+ {k:'sram',t:'SRAM · ذاكرة العمل',r:/SRAM|RAM/,d:'ذاكرة سريعة يستخدمها البرنامج أثناء العمل، وتُمسح عند فصل الكهرباء. هي مثل الطاولة التي تعمل عليها، بينما الفلاش هو الخزانة التي تحفظ فيها.'},
+ {k:'flash',t:'Flash · الفلاش',r:/Flash|[\u0600-\u06FF]*فلاش/,d:'ذاكرة دائمة تحفظ برنامجك وملفاتك حتى بعد فصل الكهرباء.'},
+ {k:'rom',t:'ROM',r:/ROM/,d:'ذاكرة ثابتة من المصنع فيها برنامج الإقلاع الأول. لا يمكنك تغييرها ولا تحتاج إلى ذلك.'},
+ {k:'core',t:'النواة',r:/الأنوية|النواة/,d:'وحدة تنفيذ كاملة داخل المعالج. نواتان تعنيان أنه يستطيع تنفيذ عملين في الوقت نفسه، مثلاً: Wi‑Fi على نواة وبرنامجك على الأخرى.'},
+ {k:'xtensa',t:'Xtensa LX6',r:/Xtensa(?: LX6)?/,d:'اسم تصميم المعالج داخل الشريحة. لا تحتاج معرفته للبرمجة؛ Arduino IDE يتعامل معه عنك.'},
+ {k:'ulp',t:'ULP',r:/ULP/,d:'معالج صغير جداً وموفر يبقى يعمل بينما المعالج الرئيسي نائم. مفيد للأجهزة التي تعمل بالبطارية.'},
+ {k:'baud',t:'baud · سرعة الاتصال',r:/baud/,d:'سرعة الاتصال التسلسلي. يجب أن تكون نفسها في برنامجك وفي الشاشة التسلسلية، مثل 115200، وإلا ظهرت رموز غريبة.'},
+ {k:'dtr',t:'DTR · RTS',r:/DTR|RTS/,d:'خطا تحكم إضافيان في الاتصال التسلسلي. هنا يُستخدمان لضغط زري EN وBOOT آلياً.'},
+ {k:'diode',t:'الثنائي (Diode)',r:/Schottky|شوتكي/,d:'قطعة تسمح للكهرباء بالمرور في اتجاه واحد فقط. نوع شوتكي يفقد جهداً أقل من الثنائي العادي.'},
+ {k:'tr',t:'الترانزستور',r:/NPN|[\u0600-\u06FF]*ترانزستور[\u0600-\u06FF]*/,d:'مفتاح إلكتروني بلا أجزاء متحركة: تيار صغير على أحد أطرافه يسمح بمرور تيار أكبر بين الطرفين الآخرين.'},
+ {k:'cap',t:'المكثف',r:/MLCC|[\u0600-\u06FF]*مكثف[\u0600-\u06FF]*/,d:'يخزن كمية صغيرة من الكهرباء ويطلقها بسرعة عند الحاجة، فيمتص التقلبات. سعته تُقاس بوحدات µF (ميكروفاراد) وnF (نانوفاراد).'},
+ {k:'pull',t:'مقاومة السحب (Pull‑up)',r:/مقاوم[\u0600-\u06FF]* سحب|[Pp]ull[‑-]?up/,d:'مقاومة تبقي الطرف على قيمة معروفة، مرتفعة غالباً، عندما لا يضغط أحد على الزر، فلا يقرأ البرنامج قيماً عشوائية.'},
+ {k:'strap',t:'طرف الربط (Strapping)',r:/أطراف الربط|طرف ربط/,d:'طرف يقرأ المعالج حالته لحظة التشغيل فقط ليقرر كيف يقلع. إن كان في حالة غير متوقعة قد تدخل اللوحة وضع البرمجة أو لا تقلع أصلاً.'},
+ {k:'ohm',t:'Ω · الأوم',r:/k?Ω|[\u0600-\u06FF]*أوم/,d:'وحدة المقاومة الكهربائية. kΩ تعني ألف أوم. كلما زادت المقاومة قل التيار المار.'},
+ {k:'enig',t:'ENIG',r:/ENIG/,d:'طلاء رقيق من النيكل والذهب على النحاس يحميه من الصدأ ويسهل لحامه. لهذا تظهر الوسادات بلون ذهبي.'},
+ {k:'emi',t:'التداخل الكهرومغناطيسي',r:/التداخل الكهرومغناطيسي/,d:'إشارات كهربائية غير مرغوبة تصدرها دائرة فتشوش على غيرها، مثل الضجيج في الراديو قرب الميكروويف.'},
+ {k:'fcc',t:'FCC',r:/FCC/,d:'هيئة الاتصالات الأمريكية. وجود رقمها يعني أن الوحدة اختُبرت ومسموح بيعها كجهاز لاسلكي.'},
+ {k:'imp',t:'الممانعة',r:/الممانعة|ممانعة/,d:'«مقاومة» الإشارات عالية التردد. يجب أن تتطابق بين الراديو والهوائي، 50 أوم هنا، لتنتقل الطاقة كاملة دون أن ترتد.'},
+ {k:'brown',t:'Brownout',r:/Brownout/,d:'حماية تعيد تشغيل المعالج عندما ينخفض الجهد فجأة تحت الحد الآمن. سببها الشائع كابل رديء أو مصدر طاقة ضعيف.'},
+ {k:'bb',t:'لوح التجارب (Breadboard)',r:/لوح التجارب|لوح تجارب|Breadboard/,d:'لوح بلاستيكي مليء بالثقوب المتصلة على شكل صفوف. تغرس فيه القطع والأسلاك لتجربة الدوائر دون لحام.'},
+ {k:'ide',t:'Arduino IDE',r:/Arduino IDE/,d:'برنامج مجاني على حاسوبك تكتب فيه الكود وترفعه إلى اللوحة بضغطة زر.'},
+ {k:'upload',t:'الرفع (Upload)',r:/رفع البرنامج|زر الرفع|ترفعه/,d:'نسخ البرنامج الذي كتبته من الحاسوب إلى ذاكرة الفلاش في اللوحة عبر كابل USB. بعده يعمل البرنامج وحده دون الحاسوب.'}
+];
+const GL={};for(const g of GLOSS)GL[g.k]=g;
+const VERD={
+ io:{v:'نعم، آمن للاستخدام',d:'طرف عادي يمكنك استخدامه مدخلاً أو مخرجاً بلا قيود عند التشغيل. ابدأ دائماً بأطراف من هذا النوع.',ex:'LED مع مقاومة، زر، حساس حرارة DHT22، إشارة محرك سيرفو، شاشة صغيرة عبر I²C أو SPI.'},
+ in:{v:'للقراءة فقط',d:'يستطيع أن يقرأ فقط، ولا يستطيع إخراج كهرباء، فلن يشغل LED. وليس فيه مقاومة سحب داخلية، فإن وصلت به زراً أضف مقاومة 10kΩ.',ex:'مقبض تحكم دوار (Potentiometer)، حساس ضوء، حساس رطوبة التربة، قياس جهد بطارية.'},
+ strap:{v:'بحذر',d:'المعالج يقرأ حالة هذا الطرف لحظة التشغيل ليقرر كيف يقلع. إن وصلت به شيئاً يغيّر حالته عند التشغيل قد لا تقلع اللوحة أو يفشل الرفع. استخدمه فقط بعد نفاد الأطراف الآمنة.',ex:'غالباً لا بأس بـLED أو زر لا يُضغط أثناء التشغيل.'},
+ flash:{v:'لا تستخدمه أبداً',d:'متصل داخلياً بذاكرة البرنامج. أي توصيل به يجعل اللوحة تتوقف أو تعيد التشغيل بلا نهاية. اعتبره غير موجود.'},
+ uart:{v:'تجنبه',d:'يستخدمه الاتصال بالحاسوب لرفع البرنامج ولعرض الرسائل. إن وصلت به شيئاً قد يفشل الرفع وتختلط الرسائل.'},
+ gnd:{v:'طرف الأرضي',d:'صل به السالب (−) لكل حساس وLED وكل مصدر طاقة خارجي. توجد ثلاثة أطراف GND على اللوحة وكلها متصلة ببعضها، فاستخدم الأقرب.',ex:'الرجل القصيرة للـLED، وطرف GND أو − في أي حساس.'},
+ '3V3':{v:'مخرج تغذية 3.3V',d:'يعطي 3.3 فولت من المنظم. استخدمه لتغذية الحساسات والشاشات الصغيرة، لا المحركات. ولا تصله بأي مصدر جهد آخر.',ex:'طرف VCC أو + في حساس حرارة أو شاشة OLED.'},
+ '5V':{v:'تغذية 5V',d:'عند توصيل USB يخرج منه نحو 5V، أقل قليلاً بسبب ثنائي الحماية. ويمكنك العكس: تغذية اللوحة كلها منه بمصدر 5V منظم دون USB. لا تصله بأكثر من 5 فولت.',ex:'حساسات أو وحدات تحتاج 5V للتغذية، مع الانتباه إلى أن إشارتها الراجعة يجب ألا تتجاوز 3.3V.'},
+ EN:{v:'لا توصل به شيئاً عادة',d:'زر EN متصل بهذا الطرف. إن وصلته بـGND تتوقف الشريحة، وعندما تتركه تعيد التشغيل. يفيد فقط لإعادة التشغيل من دائرة خارجية.'}
+};
+const PGROUPS=[
+ ['آمنة للاستخدام','--k-io',['4','13','16','17','18','19','21','22','23','25','26','27','32','33'],'ابدأ بها دائماً. تصلح للإدخال والإخراج.'],
+ ['للقراءة فقط','--k-in',['VP','VN','34','35'],'للحساسات والمقابض. لا تخرج كهرباء.'],
+ ['بحذر','--k-strap',['0','2','5','12','15','EN'],'تؤثر على طريقة تشغيل اللوحة.'],
+ ['تجنبها','--k-uart',['TX','RX'],'مشغولة بالاتصال مع الحاسوب.'],
+ ['لا تلمسها','--k-flash',['CLK','SD0','SD1','SD2','SD3','CMD'],'متصلة بذاكرة البرنامج داخلياً.'],
+ ['التغذية والأرضي','--k-pwr',['3V3','5V','GND'],'الكهرباء الداخلة والخارجة.']
+];
+const TOUR=[
+ {t:'ما هذه اللوحة؟',id:null,view:'iso',x:'هذه لوحة ESP32. فكّر فيها كحاسوب صغير جداً بلا شاشة ولا لوحة مفاتيح: تكتب له برنامجاً على حاسوبك، ثم ترفعه إليه، فينفذه وحده كلما وصلت الكهرباء. يستطيع أن يقرأ الحساسات، ويشغل الأضواء، ويتصل بالإنترنت عبر Wi‑Fi. سنتبع الآن طريق الكهرباء والبيانات من لحظة دخولها إلى اللوحة.'},
+ {t:'نقطة البداية: منفذ USB',id:'usb',x:'عندما تصل الكابل بالحاسوب يدخل من هنا شيئان: كهرباء بجهد 5V تشغّل اللوحة، وبيانات هي برنامجك والرسائل. هذا المنفذ هو أكثر قطعة ستتعامل معها يدوياً.'},
+ {t:'حارس البوابة',id:'diode',x:'أول ما تمر به الكهرباء هو ثنائي الحماية. يسمح لها بالدخول ويمنعها من الرجوع إلى حاسوبك، فيحمي منفذ USB إن غذّيت اللوحة من مصدر آخر في الوقت نفسه.'},
+ {t:'من 5 إلى 3.3 فولت',id:'ldo',x:'المعالج حساس ويعمل على 3.3V فقط، و5V قد تتلفه. هذا المنظم يأخذ 5V ويخرج 3.3V ثابتة. الفرق يتحول إلى حرارة، ولهذا له لسان معدني عريض يبدد الحرارة.'},
+ {t:'إشارة الحياة',id:'led',x:'بمجرد وصول 3.3V يضيء هذا الضوء الأحمر. إن رأيته مضيئاً فالكهرباء وصلت سليمة. يمكنك إطفاؤه في النموذج من زر «الطاقة» في الأسفل.'},
+ {t:'المترجم',id:'cp2102',x:'الآن البيانات. حاسوبك يرسل البرنامج بلغة USB، والمعالج لا يفهمها. هذه الشريحة تترجم USB إلى اتصال تسلسلي بسيط عبر سلكين، وتترجم الرد في الاتجاه المعاكس.'},
+ {t:'المساعد الخفي',id:'autoreset',x:'لكي يستقبل المعالج برنامجاً جديداً يجب أن يُعاد تشغيله وزر BOOT مضغوط. هذان الترانزستوران يفعلان ذلك آلياً بأمر من المترجم، فتضغط أنت زر الرفع فقط.'},
+ {t:'زرّا EN و BOOT',id:'boot',press:['en','boot'],x:'هذان الزران يفعلان يدوياً ما يفعله المساعد آلياً. EN على اليسار يعيد التشغيل، وBOOT على اليمين يطلب وضع البرمجة. انقر أياً منهما على النموذج لتراه ينضغط.'},
+ {t:'العقل: وحدة WROOM',id:'shield',x:'كل ما رأيناه حتى الآن موجود لخدمة هذه القطعة الفضية. تحت الغطاء المعدني يوجد المعالج والذاكرة. الغطاء يمنع التشويش، ولن تفتحه أبداً في الواقع. لكن هنا سنراه من الداخل.'},
+ {t:'المعالج ESP32',id:'soc',xr:1,x:'جعلنا الغطاء شفافاً. الشريحة المربعة الكبيرة هي المعالج: نواتان تعملان بسرعة 240 MHz، وفيه راديو Wi‑Fi وبلوتوث. هنا يُنفذ برنامجك سطراً بعد سطر.'},
+ {t:'الذاكرة',id:'flash',xr:1,x:'بجانب المعالج ذاكرة الفلاش بسعة 4MB. البرنامج الذي ترفعه يُكتب هنا ويبقى بعد فصل الكهرباء، مثل الصور في ذاكرة هاتفك.'},
+ {t:'نبض الساعة',id:'xtal',xr:1,x:'هذا الكريستال يهتز 40 مليون مرة في الثانية بانتظام شديد. المعالج يعتمد عليه ليعرف الوقت بدقة، والراديو يعتمد عليه ليبقى على تردد Wi‑Fi الصحيح.'},
+ {t:'الهوائي',id:'antenna',x:'الخط النحاسي المتعرج هو الهوائي، مطبوع على لوح الوحدة نفسه. منه تخرج إشارات Wi‑Fi والبلوتوث وإليه تعود. لاحظ أن اللوحة السوداء تحته فارغة من النحاس، لأن النحاس يحجب الإشارة.'},
+ {t:'كيف رُكّبت القطع؟',id:'castell',ex:1,cam:[[40,32,22],[0,9,-13]],x:'فصلنا الطبقات: الغطاء في الأعلى، ثم لوح الوحدة الأزرق بقطعه، ثم اللوحة السوداء. لاحظ الأنصاف الذهبية على حافة الوحدة: بها تُلحم الوحدة على اللوحة. يمكنك التحكم بالفصل بنفسك من المؤشر في الأسفل.'},
+ {t:'الأطراف: طريقك إلى العالم',id:'headers',view:'iso',x:'الدبابيس الـ38 على الجانبين هي ما ستوصل به الحساسات والأضواء. لكل دبوس اسم مطبوع بجانبه. بعضها آمن، وبعضها محجوز للوحة نفسها. مرّر المؤشر على أي دبوس لتعرف وظيفته، وافتح تبويب «الأطراف» لترى أيها تستخدم.'},
+ {t:'أنت جاهز',id:null,view:'top',x:'تعرفت الآن على كل قطعة وما تفعله، وعلى طريق الكهرباء والبيانات فيها. الخطوة التالية تجربة حقيقية: في تبويب «ابدأ هنا» ستجهز حاسوبك، وتجعل اللوحة ترسل لك رسالة، ثم تضيء LED.',last:1}
+];
+
+/* ---------------- renderer ---------------- */
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=0.95;
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.prepend(renderer.domElement);
+const ANISO=renderer.capabilities.getMaxAnisotropy();
+const scene=new THREE.Scene();
+const BENCH=new THREE.Color('#252d36');
+scene.background=BENCH; scene.fog=new THREE.Fog(BENCH,230,520);
+const camera=new THREE.PerspectiveCamera(32,1,0.3,2000);
+camera.position.set(58,62,74);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true; controls.dampingFactor=0.08; controls.minDistance=9; controls.maxDistance=260; controls.target.set(0,1,0);
+
+// studio environment for reflections
+(function(){
+  const s=new THREE.Scene();
+  const room=new THREE.Mesh(new THREE.BoxGeometry(120,70,120),new THREE.MeshBasicMaterial({color:0x1e252c,side:THREE.BackSide})); s.add(room);
+  const panel=(w,h,rgb,p)=>{const m=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});m.color.setRGB(...rgb);const q=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);q.position.set(...p);q.lookAt(0,0,0);s.add(q);};
+  panel(60,34,[3.6,3.6,3.7],[0,34,0]);
+  panel(26,40,[2.4,1.9,1.5],[-58,12,14]);
+  panel(26,40,[1.3,1.7,2.3],[55,8,-30]);
+  panel(80,6,[2,2,2],[0,6,58]);
+  const pm=new THREE.PMREMGenerator(renderer);
+  scene.environment=pm.fromScene(s,0.025).texture;
+})();
+scene.add(new THREE.HemisphereLight(0xdfe8f0,0x20262c,0.35));
+const key=new THREE.DirectionalLight(0xfff4e6,1.5); key.position.set(28,70,30); key.castShadow=true;
+key.shadow.mapSize.set(2048,2048); Object.assign(key.shadow.camera,{left:-45,right:45,top:45,bottom:-45,near:10,far:200}); key.shadow.bias=-0.0004; key.shadow.normalBias=0.02;
+scene.add(key);
+const rim=new THREE.DirectionalLight(0xbcd4ff,0.5); rim.position.set(-40,25,-50); scene.add(rim);
+
+// ESD mat
+const FLOOR_Y=-17;
+const mat=(()=>{const [c,x]=cvs(1024,1024);x.fillStyle='#1f262e';x.fillRect(0,0,1024,1024);x.strokeStyle='rgba(255,255,255,.06)';x.lineWidth=2;for(let i=0;i<=1024;i+=64){x.beginPath();x.moveTo(i,0);x.lineTo(i,1024);x.stroke();x.beginPath();x.moveTo(0,i);x.lineTo(1024,i);x.stroke();}
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(12,12);t.anisotropy=ANISO;
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(800,800),new THREE.MeshStandardMaterial({map:t,roughness:.95}));m.rotation.x=-Math.PI/2;m.position.y=FLOOR_Y;m.receiveShadow=true;scene.add(m);return m;})();
+
+/* ---------------- helpers ---------------- */
+function cvs(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return [c,c.getContext('2d')];}
+function ctex(c,srgb=true){const t=new THREE.CanvasTexture(c);if(srgb)t.encoding=THREE.sRGBEncoding;t.anisotropy=ANISO;return t;}
+const P_=o=>new THREE.MeshPhysicalMaterial(o);
+const M={
+  gold:P_({color:0xdcae52,metalness:1,roughness:.26}),
+  tin:P_({color:0xd3d7da,metalness:1,roughness:.3}),
+  steel:P_({color:0xc2c7cc,metalness:1,roughness:.28}),
+  pinGold:P_({color:0xd9b25c,metalness:1,roughness:.22,flatShading:true}),
+  epoxy:P_({color:0x141516,roughness:.6,clearcoat:.1}),
+  plastic:P_({color:0x0f1011,roughness:.48,clearcoat:.25,clearcoatRoughness:.4}),
+  btnBase:P_({color:0x1b1c1e,roughness:.55}),
+  btnCap:P_({color:0x2a2c2f,roughness:.42,clearcoat:.3}),
+  mlcc:P_({color:0x9a7a55,roughness:.55}),
+  alumina:P_({color:0xe9e5db,roughness:.6}),
+  resTop:P_({color:0x111111,roughness:.45}),
+  inductor:P_({color:0x3f444a,roughness:.5}),
+  edge:P_({color:0x2f2d24,roughness:.85}),
+  modEdge:P_({color:0x232a35,roughness:.8}),
+  dark:P_({color:0x060606,roughness:.9}),
+  xtalBase:P_({color:0xc8b48c,roughness:.6}),
+  ledLens:P_({color:0xff4a35,roughness:.12,transparent:true,opacity:.85,clearcoat:1}),
+  bandGrey:P_({color:0xb9bcbf,roughness:.5}),
+  ant:P_({color:0x203453,roughness:.35,clearcoat:.6,clearcoatRoughness:.2}),
+  pick:new THREE.MeshBasicMaterial({visible:false})
+};
+M.ledLens.name='lens';
+function mesh(g,m){const o=new THREE.Mesh(g,m);o.castShadow=true;o.receiveShadow=true;return o;}
+function box(w,h,d,m){return mesh(new THREE.BoxGeometry(w,h,d),m);}
+function rrShape(w,d,r){const s=new THREE.Shape(),x=-w/2,y=-d/2;s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);s.lineTo(x+w,y+d-r);s.quadraticCurveTo(x+w,y+d,x+w-r,y+d);s.lineTo(x+r,y+d);s.quadraticCurveTo(x,y+d,x,y+d-r);s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);return s;}
+const geoCache={};
+function roundBoxGeo(w,h,d,r=.12,b=.05){const k=[w,h,d,r,b].join();if(geoCache[k])return geoCache[k];
+  const g=new THREE.ExtrudeGeometry(rrShape(w-2*b,d-2*b,Math.max(.01,r-b)),{depth:Math.max(.001,h-2*b),bevelEnabled:true,bevelThickness:b,bevelSize:b,bevelSegments:2,curveSegments:4});
+  g.rotateX(-Math.PI/2);g.translate(0,b,0);return geoCache[k]=g;}
+function roundBox(w,h,d,m,r,b){return mesh(roundBoxGeo(w,h,d,r,b),m);} // base at y=0
+// laser-marked top face
+function markTex(w,d,bg,lines,o={}){const S=90,[c,x]=cvs(Math.ceil(w*S),Math.ceil(d*S));x.fillStyle=bg;x.fillRect(0,0,c.width,c.height);
+  if(o.grain){for(let i=0;i<c.width*c.height/30;i++){x.fillStyle=`rgba(255,255,255,${Math.random()*.035})`;x.fillRect(Math.random()*c.width,Math.random()*c.height,1.5,1.5);}}
+  x.fillStyle=o.ink||'#8d8f91';x.textAlign='center';x.textBaseline='middle';
+  for(const L of lines){x.font=`${L.w||600} ${L.s*S}px "JetBrains Mono",monospace`;x.fillText(L.t,c.width/2+(L.x||0)*S,c.height/2+(L.y||0)*S);}
+  if(o.dot){x.beginPath();x.arc((o.dot[0]+w/2)*S,(o.dot[1]+d/2)*S,o.dotR*S||.3*S,0,7);x.fillStyle=o.dotC||'#2b2c2e';x.fill();}
+  if(o.draw)o.draw(x,S);return ctex(c);}
+function markPlane(w,d,tex,metal=false){const g=new THREE.PlaneGeometry(w,d);g.rotateX(-Math.PI/2);
+  const m=mesh(g,P_({map:tex,roughness:metal?.32:.58,metalness:metal?1:0,clearcoat:metal?0:.08}));m.castShadow=false;return m;}
+function chip(w,h,d,bg,lines,o){const g=new THREE.Group();const b=roundBox(w,h,d,M.epoxy,.1,.06);g.add(b);const p=markPlane(w-.14,d-.14,markTex(w-.14,d-.14,bg,lines,o));p.position.y=h+.002;g.add(p);return g;}
+// gull-wing lead: x outward, y up, extruded width along z
+function leadGeo(L,hs,t,w){const k='lead'+[L,hs,t,w];if(geoCache[k])return geoCache[k];const s=new THREE.Shape();
+  s.moveTo(0,hs+t/2);s.lineTo(L*.32,hs+t/2);s.quadraticCurveTo(L*.42+t*.3,hs+t/2,L*.48+t*.3,hs*.5);s.lineTo(L*.56+t*.15,t);s.lineTo(L,t);s.lineTo(L,0);s.lineTo(L*.53,0);s.lineTo(L*.44,hs*.5);s.quadraticCurveTo(L*.38,hs-t/2,L*.3,hs-t/2);s.lineTo(0,hs-t/2);s.closePath();
+  const g=new THREE.ExtrudeGeometry(s,{depth:w,bevelEnabled:false,curveSegments:5});g.translate(0,0,-w/2);return geoCache[k]=g;}
+function lead(L,hs,t,w,dir){const m=mesh(leadGeo(L,hs,t,w),M.tin);m.rotation.y={'+x':0,'-x':Math.PI,'+z':-Math.PI/2,'-z':Math.PI/2}[dir];return m;}
+function filletGeo(len,h,w){const k='fil'+[len,h,w];if(geoCache[k])return geoCache[k];const s=new THREE.Shape();s.moveTo(0,0);s.lineTo(len,0);s.quadraticCurveTo(len*.18,h*.12,0,h);s.closePath();
+  const g=new THREE.ExtrudeGeometry(s,{depth:w,bevelEnabled:false,curveSegments:6});g.translate(0,0,-w/2);return geoCache[k]=g;}
+function rot2(x,z,th,lx,lz){const c=Math.cos(th),s=Math.sin(th);return [x+lx*c+lz*s, z-lx*s+lz*c];}
+let seed=7;const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+
+/* ---------------- parts registry ---------------- */
+const PARTS={};for(const k in INFO)PARTS[k]={id:k,objs:[],mats:[],cache:{}};
+const pickables=[];const EX=[];
+function claim(id,obj){const P=PARTS[id];P.objs.push(obj);obj.traverse(o=>{if(!o.isMesh||o.userData.part)return;o.userData.part=id;pickables.push(o);
+  if(o.material===M.pick)return;const cl=src=>{const k=src.uuid;if(!P.cache[k]){const m=src.clone();m.name=src.name;m.userData.base=m.emissive.clone();P.cache[k]=m;P.mats.push(m);}return P.cache[k];};
+  o.material=Array.isArray(o.material)?o.material.map(cl):cl(o.material);});return obj;}
+function ex(o,x,y,z){EX.push({o,b:o.position.clone(),v:new THREE.Vector3(x,y,z)});}
+
+/* ---------------- dimensions ---------------- */
+const BW=27.9,BL=54.4,BT=1.6,PX=40,TW=Math.round(BW*PX),TH=Math.round(BL*PX);
+const pinZ=i=>-22.86+i*2.54;
+const MODZ=-14.45, MW=18, ML=25.5, MT=0.8, MY=BT+.06;
+const sidePadZ=i=>-4.4+1.27*i; // module-local
+const botPadX=j=>-5.715+1.27*j;
+
+const PASS=[['0805',-8.5,12,90,'C'],['0805',-5,11.5,0,'C'],['0603',-2,11.5,0,'C'],['0603',-7.5,2.5,90,'R'],['0603',-7.5,5.5,90,'C'],['0603',-5,2,0,'R'],
+ ['0402',-1.2,6,90,'C'],['0402',-1.2,8.3,90,'C'],['0402',2.5,11.4,0,'R'],['0402',4.4,11.4,0,'R'],['0603',9.0,8.5,90,'R'],['0603',9.0,0.8,90,'R'],['0402',4.0,2.0,0,'C'],
+ ['0603',6.8,16.6,90,'R'],['0603',3.6,16.5,0,'C'],['0402',-10.3,18.6,90,'R'],['0402',5.4,13.6,90,'C'],['0805',-6,0.7,0,'C'],['0603',5.4,0.6,0,'C']];
+const PSZ={'0402':[1.0,.5,.35],'0603':[1.6,.8,.45],'0805':[2.0,1.25,.55]};
+const RCODE=['103','102','472','103','222','103','103'];
+
+/* ---------------- texture painter ---------------- */
+function painter(w,h,mx,my,S){const L={};const ctx={};for(const k of['c','b','m']){const [c,x]=cvs(w,h);L[k]=c;ctx[k]=x;}
+  const P={L,S};const each=(vals,fn)=>{for(const k of['c','b','m']){if(vals[k]==null)continue;const x=ctx[k];x.save();fn(x,vals[k]);x.restore();}};
+  P.fill=(c,b)=>each({c,b,m:'#000'},(x,v)=>{x.fillStyle=v;x.fillRect(0,0,w,h);});
+  P.poly=(pts,v)=>each(v,(x,s)=>{x.fillStyle=s;x.beginPath();pts.forEach((p,i)=>i?x.lineTo(mx(p[0]),my(p[1])):x.moveTo(mx(p[0]),my(p[1])));x.closePath();x.fill();});
+  P.line=(pts,wd,v,cap='round')=>each(v,(x,s)=>{x.strokeStyle=s;x.lineWidth=wd*S;x.lineCap=cap;x.lineJoin='round';x.beginPath();pts.forEach((p,i)=>i?x.lineTo(mx(p[0]),my(p[1])):x.moveTo(mx(p[0]),my(p[1])));x.stroke();});
+  P.rect=(cx,cz,wd,ht,rot,v)=>each(v,(x,s)=>{x.translate(mx(cx),my(cz));x.rotate(rot||0);x.fillStyle=s;x.fillRect(-wd*S/2,-ht*S/2,wd*S,ht*S);});
+  P.srect=(cx,cz,wd,ht,lw,v)=>each(v,(x,s)=>{x.strokeStyle=s;x.lineWidth=lw*S;x.strokeRect(mx(cx)-wd*S/2,my(cz)-ht*S/2,wd*S,ht*S);});
+  P.circ=(cx,cz,r,v)=>each(v,(x,s)=>{x.fillStyle=s;x.beginPath();x.arc(mx(cx),my(cz),r*S,0,Math.PI*2);x.fill();});
+  P.text=(t,cx,cz,size,align,v,rot=0,weight=700,fam='"JetBrains Mono",monospace')=>each(v,(x,s)=>{x.translate(mx(cx),my(cz));x.rotate(rot);x.fillStyle=s;x.font=`${weight} ${size*S}px ${fam}`;x.textAlign=align;x.textBaseline='middle';x.fillText(t,0,0);});
+  P.tex=()=>{const c=ctex(L.c),b=ctex(L.b,false),m=ctex(L.m,false);return {c,b,m};};
+  return P;}
+
+const MASK='#0b0d10',TRACE='#1b2127',SILK='#ecebe4',GOLD='#c9993d';
+const vPad={c:GOLD,b:'#6a6a6a',m:'#fff'},vTrace={c:TRACE,b:'#b4b4b4'},vSilk={c:SILK,b:'#d8d8d8'},vHole={c:'#070707',b:'#202020',m:'#000'},vMask={c:MASK,b:'#808080',m:'#000'};
+function via(P,x,z){P.circ(x,z,.32,{c:'#1e252c',b:'#c0c0c0'});P.circ(x,z,.16,{c:'#050505',b:'#202020'});}
+function passPads(P,size,x,z,deg){const [L,W]=PSZ[size],th=deg*Math.PI/180,pl=L*.42;for(const s of[-1,1]){const [px,pz]=rot2(x,z,th,s*(L/2-pl/2+.12),0);P.rect(px,pz,pl+.1,W*1.15,-th,vPad);}}
+
+/* ---------- main board top ---------- */
+const mxT=x=>(x+BW/2)*PX, myT=z=>(z+BL/2)*PX;
+const T=painter(TW,TH,mxT,myT,PX);
+T.fill(MASK,'#808080');
+// header ↔ module traces
+for(const s of[-1,1])for(let i=0;i<19;i++){const zp=pinZ(i);if(zp>-1.9)continue;let best=0,bd=1e9;for(let j=0;j<14;j++){const d=Math.abs(MODZ+sidePadZ(j)-zp);if(d<bd){bd=d;best=j;}}const zj=MODZ+sidePadZ(best);
+  T.line([[s*12.7,zp],[s*11.25,zp],[s*10.35,zj],[s*9.3,zj]],.26,vTrace);}
+// power & signal routing
+const TR=[
+ [[[1.3,22.4],[1.3,21.4],[2.6,20]],.6],
+ [[[0.3,20],[-1.2,21.2],[-10,21.2],[-11.3,22.86],[-12.7,22.86]],.6],
+ [[[-2.2,20.2],[-2.2,21.2]],.6],
+ [[[-4.5,13.8],[-4.5,12.7],[-8.5,12.7],[-10.4,10.8],[-10.4,0.2],[-9.6,-.8],[-9.0,-1.7]],.75],
+ [[[-0.3,22.4],[-0.3,14.2],[1.6,12.3],[1.6,9.6]],.22],[[[0.25,22.4],[0.25,14.4],[2.1,12.6],[2.1,9.6]],.22],
+ [[[12.7,10.16],[10.9,10.16],[10.9,21.4],[9.9,22.5]],.26],
+ [[[7.9,5.6],[9.0,6.6],[10.9,8.4]],.22],[[[7.9,2.6],[9.0,1.6]],.22],[[[5.7,2.6],[5.0,3.4],[5.0,4.4]],.2],[[[5.7,5.6],[5.0,6.2]],.2],
+ [[[6.8,18.4],[6.8,17.5]],.25],[[[6.8,15.8],[6.8,14.6],[5.4,13.6]],.25],
+ [[[-7.5,1.7],[-7.5,.4],[-9.2,-1.0]],.25],[[[-7.5,6.3],[-7.5,8.4],[-10.4,8.4]],.25],[[[-5.8,2],[-7.5,2]],.2],
+ [[[3.0,4.5],[3.0,3.3]],.22],[[[3.5,4.5],[3.5,2.9],[4,2.4]],.22],
+ [[[-12.7,10.16],[-11.4,10.16],[-11.0,9.6]],.6],[[[12.7,-22.86],[11.3,-21.4]],.6],[[[12.7,-7.62],[11.4,-7.62]],.6],
+ [[[-2,11.1],[0,11.1],[0.6,10.4]],.3]
+];
+for(const [p,w] of TR)T.line(p,w,vTrace);
+// header rings
+for(const s of[-1,1])for(let i=0;i<19;i++){const x=s*12.7,z=pinZ(i);if(s<0&&i===0)T.rect(x,z,1.7,1.7,0,vPad);else T.circ(x,z,.86,vPad);T.circ(x,z,.5,vHole);}
+// module footprint pads
+for(const s of[-1,1])for(let i=0;i<14;i++)T.rect(s*9.0,MODZ+sidePadZ(i),1.25,.8,0,vPad);
+for(let j=0;j<10;j++)T.rect(botPadX(j),MODZ+ML/2,.8,1.25,0,vPad);
+T.rect(0,MODZ+3,4.2,4.2,0,vPad);
+// passives pads
+for(const p of PASS)passPads(T,p[0],p[1],p[2],p[3]);
+// CP2102
+T.rect(2.5,7,3.2,3.2,0,vPad);for(let k=0;k<7;k++){const o=-1.5+k*.5;T.rect(2.5+o,4.35,.28,.8,0,vPad);T.rect(2.5+o,9.65,.28,.8,0,vPad);T.rect(-.15,7+o,.8,.28,0,vPad);T.rect(5.15,7+o,.8,.28,0,vPad);}
+// LDO SOT-223
+for(const dx of[-2.3,0,2.3])T.rect(-4.5+dx,20.0,1.0,1.6,0,vPad);T.rect(-4.5,14.0,3.4,2.1,0,vPad);
+// SOT-23 x2 (rot 90 → length along z)
+for(const z of[2.6,5.6]){T.rect(5.7,z-.95,1.0,.65,0,vPad);T.rect(5.7,z+.95,1.0,.65,0,vPad);T.rect(7.9,z,1.0,.65,0,vPad);}
+// diode, LED
+T.rect(.25,20,1.1,1.0,0,vPad);T.rect(2.75,20,1.1,1.0,0,vPad);
+T.rect(6.8,18.6,1.3,1.0,0,vPad);T.rect(6.8,20.4,1.3,1.0,0,vPad);
+// buttons
+for(const bx of[-7.8,7.8])for(const sx of[-1,1])for(const sz of[-1,1])T.rect(bx+sx*2.45,24.6+sz*1.1,1.1,.75,0,vPad);
+// USB
+for(let k=0;k<5;k++)T.rect(-1.3+k*.65,22.25,.4,1.1,0,vPad);for(const sx of[-1,1])for(const z of[23.7,26.4])T.rect(sx*3.9,z,1.5,1.4,0,vPad);
+// vias
+for(const [x,z] of[[-10.4,14],[-10.4,16],[10.1,14.2],[10.1,16.2],[-3,4],[0,1.4],[6.3,9.9],[-8.8,8.9],[9.2,12.5],[-1.5,15],[1.5,15.6],[8.6,20.6],[3.0,3.3],[-11.0,9.6],[11.3,-21.4],[11.4,-7.62],[-3.6,7.6],[-9.6,4.4],[4.3,14.6],[-1,17.4]])via(T,x,z);
+// silkscreen
+for(let i=0;i<19;i++){T.text(PL[i],-11.55,pinZ(i),.82,'left',vSilk);T.text(PR[i],11.55,pinZ(i),.82,'right',vSilk);}
+T.line([[-9.3,-1.4],[9.3,-1.4]],.14,vSilk);T.line([[-9.3,-27.0],[-9.3,-1.4]],.14,vSilk);T.line([[9.3,-27],[9.3,-1.4]],.14,vSilk);
+T.text('EN',-7.8,22.3,1.0,'center',vSilk);T.text('BOOT',7.8,22.3,1.0,'center',vSilk);
+for(const bx of[-7.8,7.8])T.srect(bx,24.6,4.6,3.6,.13,vSilk);
+T.srect(0,25,8.3,5.6,.13,vSilk);
+const cpCorner=(x,z,dx,dz)=>T.line([[x+dx,z],[x,z],[x,z+dz]],.13,vSilk);
+cpCorner(-.5,4.0,.8,.8);cpCorner(5.5,4.0,-.8,.8);cpCorner(-.5,10,.8,-.8);cpCorner(5.5,10,-.8,-.8);T.circ(-.8,3.7,.22,vSilk);
+T.text('U2',-.2,3.1,.65,'left',vSilk);T.text('U3',-8.2,14.2,.65,'center',vSilk);T.text('D1',1.5,18.9,.6,'center',vSilk);T.text('Q1',9.8,3.1,.55,'center',vSilk);
+T.text('5V',-12.7,25.0,.7,'center',vSilk);T.text('3V3',-12.7,-25.0,.7,'center',vSilk);
+T.srect(1.5,20,3.3,1.9,.12,vSilk);T.rect(.15,20,.2,1.9,0,vSilk);
+const topT=T.tex();
+
+/* ---------- main board bottom ---------- */
+const myB=z=>(BL/2-z)*PX;const B=painter(TW,TH,mxT,myB,PX);
+B.fill(MASK,'#808080');
+const POUR={c:'#171d22',b:'#a0a0a0'};
+B.rect(0,0,BW-1.0,BL-1.0,0,POUR);
+B.rect(0,-24.4,19.5,5.6,0,vMask); // antenna keep-out
+const BTR=[[[[3.0,3.3],[3.0,-1.0],[10.4,-8.4],[10.4,-12.7],[12.7,-12.7]],.25],[[[3.0,3.3],[2.2,2.4]],.0],[[[-12.7,-20.32],[-11.25,-18.9],[-11.25,21.6],[-9.5,23.4]],.25],
+ [[[6.3,9.9],[9.6,9.9],[10.4,9.1],[10.4,-14.0],[11.3,-15.24],[12.7,-15.24]],.25],[[[-10.4,14],[-3,14],[-1.5,15]],.6],[[[0,1.4],[-3,4],[-8.8,8.9]],.25],[[[1.5,15.6],[4.3,14.6],[8.6,20.6]],.3]];
+for(const [p,w] of BTR){if(!w)continue;B.line(p,w+.5,vMask);B.line(p,w,POUR);}
+for(const s of[-1,1])for(let i=0;i<19;i++){const x=s*12.7,z=pinZ(i);B.circ(x,z,1.3,vMask);if(s<0&&i===0)B.rect(x,z,1.7,1.7,0,vPad);else B.circ(x,z,.86,vPad);B.circ(x,z,.5,vHole);}
+for(const sx of[-1,1])for(const z of[23.7,26.4]){B.circ(sx*3.9,z,1.1,vMask);B.rect(sx*3.9,z,1.3,1.2,0,vPad);B.rect(sx*3.9,z,.5,.6,0,vHole);}
+for(const [x,z] of[[-10.4,14],[-10.4,16],[10.1,14.2],[10.1,16.2],[-3,4],[0,1.4],[6.3,9.9],[-8.8,8.9],[9.2,12.5],[-1.5,15],[1.5,15.6],[8.6,20.6],[3.0,3.3],[-11.0,9.6],[11.3,-21.4],[11.4,-7.62],[-3.6,7.6],[-9.6,4.4],[4.3,14.6],[-1,17.4]]){B.circ(x,z,.5,vMask);via(B,x,z);}
+for(let i=0;i<19;i++){B.text(PL[i],-11.4,pinZ(i),.8,'left',vSilk);B.text(PR[i],11.4,pinZ(i),.8,'right',vSilk);}
+B.rect(0,2.5,17.5,10.5,0,vMask);
+B.text('ESP32-DevKitC V4',0,0,1.55,'center',vSilk);
+B.text('Wi-Fi + Bluetooth · 38 PIN',0,2.4,.85,'center',vSilk,0,500);
+B.text('2.54 mm PITCH · 3.3 V LOGIC',0,4.2,.8,'center',vSilk,0,500);
+B.srect(0,2.1,17.0,8.0,.13,vSilk);
+B.text('ANTENNA KEEP-OUT',0,-24.4,.75,'center',vSilk,0,500);
+B.text('REV 4',0,7.2,.7,'center',vSilk);
+B.rect(0,11.2,19,3.4,0,vMask);
+B.text('عمل الطالب: عبد العزيز فهد الجعيد',0,10.6,1.05,'center',vSilk,0,700,'"Noto Kufi Arabic",sans-serif');
+B.text('Telegram @afjo45 · github.com/0xazc0000e',0,12.3,.68,'center',vSilk,0,500);
+const botT=B.tex();
+
+/* ---------- module PCB top ---------- */
+const MPX=56,MTW=MW*MPX,MTH=ML*MPX;const mxM=x=>(x+MW/2)*MPX,myM=z=>(z+ML/2)*MPX;
+const MK=painter(MTW,MTH,mxM,myM,MPX);
+const MMASK='#121d2e',MTRACE='#1d2e48';const vMT={c:MTRACE,b:'#b4b4b4'};
+MK.fill(MMASK,'#808080');
+const ANT=[[-7.8,-6.4],[-7.8,-11.8],[-4.5,-11.8],[-4.5,-8.2],[-2.5,-8.2],[-2.5,-11.8],[-0.5,-11.8],[-0.5,-8.2],[1.5,-8.2],[1.5,-11.8],[3.5,-11.8],[3.5,-8.2],[5.5,-8.2],[5.5,-11.8],[7.6,-11.8],[7.6,-9.4]];
+MK.line(ANT,.5,{c:'#2a4874',b:'#c8c8c8'},'butt');MK.line([[-6.5,-5.4],[-6.5,-11.8]],.5,{c:'#2a4874',b:'#c8c8c8'},'butt');
+MK.line([[1.2,.6],[1.2,-2],[-4,-4.4],[-6.5,-5.4]],.32,vMT);
+// internal footprints
+MK.rect(1.2,3.6,6.2,6.2,0,{c:'#173052',b:'#909090'});
+for(let k=0;k<12;k++){const o=-2.2+k*.4;MK.rect(1.2+o,.45,.22,.7,0,vPad);MK.rect(1.2+o,6.75,.22,.7,0,vPad);MK.rect(-1.95,3.6+o,.7,.22,0,vPad);MK.rect(4.35,3.6+o,.7,.22,0,vPad);}
+for(let k=0;k<4;k++){MK.rect(-7.35,6.0+k*1.27,.8,.5,0,vPad);MK.rect(-1.85,6.0+k*1.27,.8,.5,0,vPad);}
+MK.rect(5.6-1.1,9.2-.85,1.2,1.0,0,vPad);MK.rect(5.6+1.1,9.2+.85,1.2,1.0,0,vPad);MK.rect(5.6+1.1,9.2-.85,1.2,1.0,0,vPad);MK.rect(5.6-1.1,9.2+.85,1.2,1.0,0,vPad);
+const MPASS=[[-2.8,.0,0,'C'],[-.3,-1.4,90,'L'],[5.0,1.0,90,'C'],[5.8,4.6,0,'C'],[1.0,8.8,0,'C'],[2.7,10.0,90,'C'],[-1.0,10.8,0,'R'],[-6.0,1.5,90,'C'],[-6.0,-1.8,0,'C'],[6.6,-2.0,90,'C'],[-2.6,-3.4,0,'L'],[-4.8,-4.1,90,'C']];
+for(const p of MPASS)passPads(MK,'0402',p[0],p[1],p[2]);
+for(const [p,w] of[[[[-1.95,2],[-4.5,2],[-6,1.5]],.18],[[[4.35,4.6],[5.8,4.6]],.18],[[[1.2,6.75],[1.2,8.8]],.18],[[[4.35,6],[4.6,8.35]],.18],[[[-1.95,5.2],[-1.85,6]],.18],[[[-6.0,-1.8],[-7.6,-3.3]],.25]])MK.line(p,w,vMT);
+// castellation pads
+for(const s of[-1,1])for(let i=0;i<14;i++)MK.rect(s*(MW/2-.5),sidePadZ(i),1.0,.85,0,vPad);
+for(let j=0;j<10;j++)MK.rect(botPadX(j),ML/2-.5,.85,1.0,0,vPad);
+// shield footprint ring
+MK.srect(0,3.6,16.9,17.5,.35,{c:'#a8843a',b:'#707070',m:'#fff'});
+for(const [x,z] of[[-3,-2],[3.6,-1.4],[-7,9],[7,6],[0,11.6],[-7.4,-4.3],[7.4,-4.3]])via(MK,x,z);
+MK.circ(-8.3,-4.9,.28,vSilk);
+const modT=MK.tex();
+
+/* ---------------- build: main board ---------------- */
+const root=new THREE.Group();scene.add(root);
+const board=new THREE.Group();root.add(board);
+const topMat=P_({map:topT.c,bumpMap:topT.b,bumpScale:.09,metalnessMap:topT.m,metalness:1,roughness:.5,clearcoat:.3,clearcoatRoughness:.35,envMapIntensity:.55});
+const botMat=P_({map:botT.c,bumpMap:botT.b,bumpScale:.09,metalnessMap:botT.m,metalness:1,roughness:.5,clearcoat:.3,clearcoatRoughness:.35,envMapIntensity:.55});
+const pcb=new THREE.Mesh(new THREE.BoxGeometry(BW,BT,BL),[M.edge,M.edge,topMat,botMat,M.edge,M.edge]);pcb.position.y=BT/2;pcb.castShadow=pcb.receiveShadow=true;
+board.add(pcb);claim('pcb',pcb);
+
+/* headers */
+const headers=new THREE.Group();board.add(headers);
+const shaftG=new THREE.CylinderGeometry(.4525,.4525,10.8,4,1);shaftG.rotateY(Math.PI/4);
+const tipTopG=new THREE.CylinderGeometry(.17,.4525,.4,4,1);tipTopG.rotateY(Math.PI/4);
+const tipBotG=new THREE.CylinderGeometry(.4525,.17,.4,4,1);tipBotG.rotateY(Math.PI/4);
+const filPts=[];for(let k=0;k<=10;k++){const t=k/10;filPts.push(new THREE.Vector2(.36+(.92-.36)*Math.pow(1-t,2.2),t*.95));}
+const pinFilG=new THREE.LatheGeometry(filPts,36);
+const housG=roundBoxGeo(2.46,2.5,2.46,.18,.12);
+const pinMeshes={};
+for(const s of[-1,1])for(let i=0;i<19;i++){const x=s*12.7,z=pinZ(i),lab=(s<0?PL:PR)[i],ud={pin:{lab,side:s<0?'L':'R',i}};
+  const g=new THREE.Group();g.position.set(x,0,z);
+  const sh=mesh(shaftG,M.pinGold);sh.position.y=-2.5;g.add(sh);
+  const tt=mesh(tipTopG,M.pinGold);tt.position.y=2.9+.2;g.add(tt);
+  const tb=mesh(tipBotG,M.pinGold);tb.position.y=-7.9-.2;g.add(tb);
+  const f=mesh(pinFilG,M.tin);f.position.y=BT;g.add(f);
+  const h=mesh(housG,M.plastic);h.position.y=-2.5;g.add(h);
+  g.traverse(o=>{if(o.isMesh)o.userData.pin=ud.pin;});headers.add(g);pinMeshes[s+':'+i]=g;}
+claim('headers',headers);ex(headers,0,-6,0);
+const pinRing=new THREE.Mesh(new THREE.TorusGeometry(1.05,.11,10,40),new THREE.MeshBasicMaterial({color:0xe2a25a}));pinRing.rotation.x=Math.PI/2;pinRing.visible=false;scene.add(pinRing);
+
+/* passives */
+function passive(size,kind,code){const [L,W,H]=PSZ[size];const g=new THREE.Group();const tw=Math.min(.3,L*.22);
+  if(kind==='R'){const b=box(L-.02,H*.85,W,M.alumina);b.position.y=H*.425;g.add(b);const t=box(L-2*tw+.02,.05,W*.98,M.resTop);t.position.y=H*.85+.02;g.add(t);
+    if(code&&size!=='0402'){const p=markPlane(L-2*tw,W*.9,markTex(L-2*tw,W*.9,'#111',[{t:code,s:W*.55,w:500}],{ink:'#e8e8e0'}));p.position.y=H*.85+.047;g.add(p);}}
+  else{const b=box(L-.02,H,W-.02,kind==='L'?M.inductor:M.mlcc);b.position.y=H/2;g.add(b);}
+  for(const s of[-1,1]){const t=box(tw,H+.02,W+.02,M.tin);t.position.set(s*(L/2-tw/2),(H+.02)/2,0);g.add(t);
+    const f=mesh(filletGeo(.28,H*.75,W*.95),M.tin);f.position.set(s*L/2,0,0);f.rotation.y=s>0?0:Math.PI;g.add(f);}
+  return g;}
+let rc=0;
+for(const [size,x,z,deg,k] of PASS){const g=passive(size,k,RCODE[rc++%RCODE.length]);g.position.set(x,BT+.02,z);g.rotation.y=deg*Math.PI/180;board.add(g);claim(k==='R'?'res':'caps',g);ex(g,0,2.5,0);}
+
+/* CP2102 QFN28 */
+const cp=new THREE.Group();cp.position.set(2.5,BT+.03,7);board.add(cp);
+cp.add(chip(5,.9,5,'#141516',[{t:'SILABS',s:.55,y:-1.0,w:700},{t:'CP2102',s:.75,y:0,w:700},{t:'DCL00X',s:.5,y:.95,w:500},{t:'2229+',s:.42,y:1.7,w:500}],{dot:[-1.85,-1.85],dotR:.28,dotC:'#2a2b2d',ink:'#8a8c8e'}));
+for(let k=0;k<7;k++){const o=-1.5+k*.5;for(const [x,z,w,d] of[[o,-2.45,.25,.12],[o,2.45,.25,.12],[-2.45,o,.12,.25],[2.45,o,.12,.25]]){const t=box(w,.2,d,M.tin);t.position.set(x,.1,z);cp.add(t);}}
+claim('cp2102',cp);ex(cp,0,5,0);
+
+/* LDO SOT-223 */
+const ldo=new THREE.Group();ldo.position.set(-4.5,BT+.02,17);board.add(ldo);
+const ldoB=chip(6.5,1.6,3.5,'#141516',[{t:'AMS1117',s:.8,y:-.45,w:700},{t:'3.3  2214',s:.6,y:.65,w:500}],{ink:'#9a9c9e'});ldoB.position.y=.1;ldo.add(ldoB);
+for(const dx of[-2.3,0,2.3]){const l=lead(1.7,.85,.26,.7,'+z');l.position.set(dx,0,1.6);ldo.add(l);}
+const tab=lead(1.75,.85,.26,3.0,'-z');tab.position.set(0,0,-1.6);ldo.add(tab);
+claim('ldo',ldo);ex(ldo,0,5,0);
+
+/* SOT-23 x2 */
+const ar=new THREE.Group();board.add(ar);
+for(const z of[2.6,5.6]){const q=new THREE.Group();q.position.set(6.8,BT+.02,z);q.rotation.y=Math.PI/2;
+  const b=chip(2.9,1.0,1.3,'#141516',[{t:'J3Y',s:.55,w:600}],{ink:'#9a9c9e'});b.position.y=.08;q.add(b);
+  for(const dx of[-.95,.95]){const l=lead(.55,.5,.13,.4,'+z');l.position.set(dx,0,.65);q.add(l);}
+  const l=lead(.55,.5,.13,.4,'-z');l.position.set(0,0,-.65);q.add(l);ar.add(q);}
+claim('autoreset',ar);ex(ar,0,4,0);
+
+/* Diode SOD-123 */
+const di=new THREE.Group();di.position.set(1.5,BT+.02,20);board.add(di);
+const dib=chip(2.7,1.05,1.6,'#141516',[{t:'SS14',s:.55,x:.25,w:600}],{ink:'#9a9c9e'});dib.position.y=.05;di.add(dib);
+const band=box(.42,.02,1.46,M.bandGrey);band.position.set(-.95,1.11,0);di.add(band);
+for(const d of['+x','-x']){const l=lead(.75,.45,.13,.62,d);l.position.set(d==='+x'?1.35:-1.35,0,0);di.add(l);}
+claim('diode',di);ex(di,0,4,0);
+
+/* LED 0805 */
+const led=new THREE.Group();led.position.set(6.8,BT+.02,19.5);led.rotation.y=Math.PI/2;board.add(led);
+const sub=box(2.0,.3,1.25,M.alumina);sub.position.y=.15;led.add(sub);
+const lens=box(1.45,.42,1.05,M.ledLens);lens.position.y=.3+.21;led.add(lens);
+const die=box(.3,.12,.3,P_({color:0x6a1a10,roughness:.4}));die.position.y=.36;led.add(die);
+for(const s of[-1,1]){const t=box(.32,.33,1.27,M.tin);t.position.set(s*.84,.165,0);led.add(t);const f=mesh(filletGeo(.26,.25,1.1),M.tin);f.position.x=s;f.rotation.y=s>0?0:Math.PI;led.add(f);}
+claim('led',led);ex(led,0,4,0);
+const ledLight=new THREE.PointLight(0xff3020,0,14,2);ledLight.position.set(6.8,BT+2.2,19.5);board.add(ledLight);
+
+/* Buttons */
+const actuators={};
+function button(id,x){const g=new THREE.Group();g.position.set(x,BT+.02,24.6);board.add(g);
+  const base=roundBox(4.0,.9,3.0,M.btnBase,.15,.06);g.add(base);
+  const plate=box(4.1,.1,3.1,M.steel);plate.position.y=.95;g.add(plate);
+  for(const sx of[-1,1]){const tabm=box(.1,.75,1.0,M.steel);tabm.position.set(sx*2.03,.55,0);g.add(tabm);}
+  const ring=box(2.5,.06,1.7,M.steel);ring.position.y=1.03;g.add(ring);
+  const act=roundBox(2.0,.55,1.25,M.btnCap,.25,.1);act.position.y=1.0;g.add(act);actuators[id]=act;
+  for(const sx of[-1,1])for(const sz of[-1,1]){const l=lead(.6,.6,.12,.55,sx>0?'+x':'-x');l.position.set(sx*2.0,0,sz*1.1);g.add(l);}
+  claim(id,g);ex(g,0,5,0);}
+button('en',-7.8);button('boot',7.8);
+
+/* Micro-USB */
+const usb=new THREE.Group();board.add(usb);
+(function(){const sh=new THREE.Shape();sh.moveTo(-3.75,2.6);sh.lineTo(3.75,2.6);sh.lineTo(3.75,.9);sh.lineTo(2.85,0);sh.lineTo(-2.85,0);sh.lineTo(-3.75,.9);sh.closePath();
+  const hole=new THREE.Path();hole.moveTo(-3.53,2.38);hole.lineTo(-3.53,.99);hole.lineTo(-2.76,.22);hole.lineTo(2.76,.22);hole.lineTo(3.53,.99);hole.lineTo(3.53,2.38);hole.closePath();sh.holes.push(hole);
+  const shell=mesh(new THREE.ExtrudeGeometry(sh,{depth:5,bevelEnabled:true,bevelThickness:.04,bevelSize:.03,bevelSegments:1}),M.steel);shell.position.set(0,BT,22.8);usb.add(shell);
+  const back=new THREE.Shape();back.moveTo(-3.6,2.5);back.lineTo(3.6,2.5);back.lineTo(3.6,.9);back.lineTo(2.8,.1);back.lineTo(-2.8,.1);back.lineTo(-3.6,.9);back.closePath();
+  const inner=mesh(new THREE.ExtrudeGeometry(back,{depth:1.0,bevelEnabled:false}),M.plastic);inner.position.set(0,BT,22.85);usb.add(inner);
+  const tongue=box(4.7,.6,3.3,M.plastic);tongue.position.set(0,BT+1.7,22.85+1+1.6);usb.add(tongue);
+  for(let k=0;k<5;k++){const c=box(.32,.05,2.4,M.gold);c.position.set(-1.3+k*.65,BT+1.38,25.2);usb.add(c);}
+  const lip=box(7.9,.12,.55,M.steel);lip.position.set(0,BT+2.66,27.6);lip.rotation.x=-.18;usb.add(lip);
+  for(const sx of[-1,1]){const latch=box(.7,.1,1.1,M.steel);latch.position.set(sx*1.6,BT+2.62,25.3);latch.rotation.x=.12;usb.add(latch);
+    for(const z of[23.7,26.4]){const t=box(.14,1.4,1.0,M.steel);t.position.set(sx*3.86,BT+.75,z);usb.add(t);const leg=box(.4,1.2,.5,M.steel);leg.position.set(sx*3.9,-.5,z);usb.add(leg);
+      const f=mesh(filletGeo(.55,.55,1.1),M.tin);f.position.set(sx*3.82,BT,z);f.rotation.y=sx>0?0:Math.PI;usb.add(f);}}
+  for(let k=0;k<5;k++){const p=box(.3,.12,1.0,M.tin);p.position.set(-1.3+k*.65,BT+.06,22.3);usb.add(p);const v=box(.3,.7,.12,M.tin);v.position.set(-1.3+k*.65,BT+.38,22.8);usb.add(v);}
+})();
+claim('usb',usb);ex(usb,0,4,6);
+
+/* ---------------- module ---------------- */
+const modG=new THREE.Group();modG.position.set(0,MY,MODZ);board.add(modG);
+const modTop=P_({map:modT.c,bumpMap:modT.b,bumpScale:.08,metalnessMap:modT.m,metalness:1,roughness:.34,clearcoat:.6,clearcoatRoughness:.25});
+const modPcb=new THREE.Mesh(new THREE.BoxGeometry(MW,MT,ML),[M.modEdge,M.modEdge,modTop,M.modEdge,M.modEdge,M.modEdge]);modPcb.position.y=MT/2;modPcb.castShadow=modPcb.receiveShadow=true;
+modG.add(modPcb);claim('module',modPcb);
+// castellations
+const cast=new THREE.Group();modG.add(cast);
+const halfCyl=new THREE.CylinderGeometry(.33,.33,MT+.02,14,1,true,0,Math.PI);
+const castPts=[];for(const s of[-1,1])for(let i=0;i<14;i++)castPts.push([s*MW/2,sidePadZ(i),s>0?'+x':'-x']);for(let j=0;j<10;j++)castPts.push([botPadX(j),ML/2,'+z']);
+const solderG=new THREE.Group();board.add(solderG);
+for(const [x,z,d] of castPts){const along=d==='+z';const hc=box(along?.7:.05,MT+.02,along?.05:.7,M.gold);
+  hc.position.set(x+(d==='+x'?.02:d==='-x'?-.02:0),MT/2,z+(along?.02:0));cast.add(hc);
+  const notch=box(along?.32:.052,MT+.03,along?.052:.32,M.dark);notch.position.copy(hc.position);notch.position.x+=(d==='+x'?.002:d==='-x'?-.002:0);notch.position.z+=along?.002:0;notch.scale.set(1,1,1);cast.add(notch);
+  const f=mesh(filletGeo(.6,MT*.9+.06,.72),M.tin);f.position.set(x,BT,MODZ+z);f.rotation.y={'+x':0,'-x':Math.PI,'+z':-Math.PI/2}[d];solderG.add(f);}
+claim('castell',cast);claim('castell',solderG);
+// antenna raised trace + pick volume
+const antG=new THREE.Group();modG.add(antG);
+const segs=[...ANT.slice(0,-1).map((p,i)=>[p,ANT[i+1]]),[[-6.5,-5.4],[-6.5,-11.8]]];
+for(const [a,b] of segs){const dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);const m=box(Math.abs(dx)>0?len+.5:.5,.03,Math.abs(dz)>0?len+.5:.5,M.ant);m.castShadow=false;m.position.set((a[0]+b[0])/2,MT+.015,(a[1]+b[1])/2);antG.add(m);}
+const antPick=new THREE.Mesh(new THREE.BoxGeometry(17,.4,6.6),M.pick);antPick.position.set(0,MT+.2,-9.2);antG.add(antPick);
+claim('antenna',antG);
+
+// internals
+const soc=new THREE.Group();soc.position.set(1.2,MT+.02,3.6);modG.add(soc);
+soc.add(chip(6,.9,6,'#121314',[{t:'ESP32',s:.95,y:-.95,w:700},{t:'D0WDQ6',s:.72,y:.15,w:600},{t:'UH46X1',s:.5,y:1.1,w:500},{t:'2218',s:.45,y:1.85,w:500}],{dot:[-2.3,-2.3],dotR:.3,ink:'#949698',dotC:'#2a2b2d'}));
+for(let k=0;k<12;k++){const o=-2.2+k*.4;for(const [x,z,w,d] of[[o,-2.95,.2,.12],[o,2.95,.2,.12],[-2.95,o,.12,.2],[2.95,o,.12,.2]]){const t=box(w,.2,d,M.tin);t.position.set(x,.1,z);soc.add(t);}}
+claim('soc',soc);ex(soc,0,4.5,0);
+const fl=new THREE.Group();fl.position.set(-4.6,MT+.02,7.9);modG.add(fl);
+fl.add(chip(5,.75,6,'#131415',[{t:'25Q32JV',s:.62,y:-.8,w:700},{t:'SIQ',s:.5,y:.15,w:500},{t:'2219',s:.45,y:1.0,w:500}],{dot:[-1.8,-2.3],dotR:.28,ink:'#959799'}));
+for(let k=0;k<4;k++)for(const sx of[-1,1]){const t=box(.12,.2,.42,M.tin);t.position.set(sx*2.5,.1,-1.9+k*1.27);fl.add(t);}
+claim('flash',fl);ex(fl,0,4,0);
+const xt=new THREE.Group();xt.position.set(5.6,MT+.02,9.2);modG.add(xt);
+const xb=box(3.2,.28,2.5,M.xtalBase);xb.position.y=.14;xt.add(xb);
+const lid=roundBox(2.9,.5,2.2,M.steel,.3,.08);lid.position.y=.28;xt.add(lid);
+const xm=markPlane(2.6,1.9,markTex(2.6,1.9,'#b9bec3',[{t:'40.000',s:.5,y:-.15,w:600},{t:'YXC',s:.35,y:.42,w:500}],{ink:'#7d8287'}),true);xm.position.y=.781;xt.add(xm);
+claim('xtal',xt);ex(xt,0,4,0);
+for(const [x,z,deg,k] of MPASS){const g=passive('0402',k);g.position.set(x,MT+.01,z);g.rotation.y=deg*Math.PI/180;modG.add(g);claim('modpass',g);ex(g,0,2,0);}
+
+// shield
+const shield=new THREE.Group();shield.position.set(0,MT,3.6);modG.add(shield);
+const shTex=(function(){const S=48,W=16.8,D=17.4;const [c,x]=cvs(W*S,D*S);const [rc,rx]=cvs(W*S,D*S);
+  x.fillStyle='#d1d4d7';x.fillRect(0,0,c.width,c.height);rx.fillStyle='rgb(0,90,0)';rx.fillRect(0,0,c.width,c.height);
+  for(let i=0;i<c.height;i++){const v=Math.random();x.fillStyle=`rgba(${v>.5?255:120},${v>.5?255:125},${v>.5?255:130},${.04+Math.random()*.05})`;x.fillRect(0,i,c.width,1);rx.fillStyle=`rgba(0,${60+Math.random()*80|0},0,.6)`;rx.fillRect(0,i,c.width,1);}
+  const ink='#8f959b';x.fillStyle=ink;x.textAlign='center';x.textBaseline='middle';rx.textAlign='center';rx.textBaseline='middle';rx.fillStyle='rgb(0,210,0)';
+  const T2=(t,y,s,w)=>{for(const g of[x,rx]){g.font=`${w} ${s*S}px "JetBrains Mono",monospace`;g.fillText(t,c.width/2,y*S);}};
+  T2('ESP32-WROOM-32',4.4,1.3,700);T2('Wi-Fi · BT · BLE  MCU MODULE',6.2,.62,500);T2('FCC ID: 2AC7Z-ESPWROOM32',11.2,.62,500);T2('R 211-161007',12.4,.62,500);
+  for(const g of[x,rx])g.fillStyle=g===x?ink:'rgb(0,210,0)';
+  for(let i=0;i<10;i++)for(let j=0;j<10;j++)if(rnd()>.5||i<2&&j<2||i<2&&j>7||i>7&&j<2){for(const g of[x,rx])g.fillRect((1.2+j*.32)*S,(8.2+i*.32)*S,.32*S,.32*S);}
+  for(const g of[x,rx])g.fillRect(12.4*S,8.2*S,.12*S,3.2*S);T2('CE',14.3*S/S+0,1.2,500);
+  const t=ctex(c);const r=ctex(rc,false);return {t,r};})();
+const shMat=P_({color:0xffffff,map:shTex.t,roughnessMap:shTex.r,roughness:1,metalness:1,transparent:true,opacity:1});
+const shSide=P_({color:0xcfd3d6,metalness:1,roughness:.32,transparent:true,opacity:1});
+const plate=new THREE.Mesh(new THREE.BoxGeometry(16.8,.15,17.4),[shSide,shSide,shMat,shSide,shSide,shSide]);plate.position.y=2.3-.075;plate.castShadow=plate.receiveShadow=true;shield.add(plate);
+for(const [w,d,x,z] of[[16.2,.15,0,-8.62],[16.2,.15,0,8.62],[.15,16.8,-8.32,0],[.15,16.8,8.32,0]]){const wl=box(w,2.25,d,shSide);wl.position.set(x,1.125,z);shield.add(wl);}
+const lip2=box(16.4,.3,.3,shSide);lip2.position.set(0,2.15,-8.55);shield.add(lip2);
+claim('shield',shield);ex(shield,0,13,0);
+ex(modG,0,7,0);
+
+root.position.y=0;
+
+/* ---------------- UI ---------------- */
+const $=s=>document.querySelector(s);
+const card=$('#card'),list=$('#list'),tip=$('#tip'),labelsEl=$('#labels');
+let sel=null,hover=null,selPin=null,techOpen=false;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const bd=s=>esc(s).replace(/[A-Za-z0-9µΩ][A-Za-z0-9.\-‑+/ ×·µΩ≈²_]*[A-Za-z0-9µΩ²%]|[A-Za-z0-9]/g,m=>`<bdi>${m}</bdi>`);
+// text → html with tappable glossary terms (first occurrence of each term per block set)
+function gl(text,used){const reps=[];let s=String(text);
+  for(const G of GLOSS){if(!G.r||used.has(G.k))continue;const m=s.match(G.r);if(!m||!m[0])continue;used.add(G.k);
+    const idx=reps.length;reps.push([G.k,m[0]]);s=s.slice(0,m.index)+''+String.fromCharCode(0xE100+idx)+''+s.slice(m.index+m[0].length);}
+  return bd(s).replace(/([-])/g,(_,c)=>{const [k,t]=reps[c.charCodeAt(0)-0xE100];return `<span class="term" role="button" tabindex="0" data-g="${k}">${bd(t)}</span>`;});}
+const T_=(k,txt)=>`<span class="term" role="button" tabindex="0" data-g="${k}">${bd(txt)}</span>`;
+function findPin(lab,side){if(side){const arr=side==='L'?PL:PR;return {lab,side,i:arr.indexOf(lab)};}let i=PL.indexOf(lab);if(i>=0)return {lab,side:'L',i};return {lab,side:'R',i:PR.indexOf(lab)};}
+function welcome(){const u=new Set();return `<span class="cat">مقدمة</span><h2>ما الذي تنظر إليه؟</h2>
+  <p>${gl('هذه لوحة تطوير ESP32: حاسوب صغير بحجم إصبعين تبرمجه ليتحكم بأشياء حقيقية. يقرأ الحساسات، ويشغل الأضواء، ويتصل بالإنترنت عبر Wi‑Fi وبهاتفك عبر البلوتوث.',u)}</p>
+  <div class="box"><b>ماذا يمكن أن تصنع بها؟</b><ul class="ul"><li>إضاءة غرفة تتحكم بها من هاتفك</li><li>محطة طقس تعرض الحرارة والرطوبة على الإنترنت</li><li>سقاية تلقائية للنباتات حسب رطوبة التربة</li><li>جرس باب يرسل لك إشعاراً على الهاتف</li></ul></div>
+  <div class="box simple"><b>كيف تستخدم هذه الصفحة</b><ul class="ul"><li>ابدأ بالجولة التعليمية: تأخذك قطعة قطعة بالترتيب الذي تمر به الكهرباء.</li><li>انقر أي قطعة على النموذج لتقرأ عنها بلغة بسيطة، مع تشبيه ونصيحة.</li><li>الكلمات التي تحتها ${T_('demo','خط منقط')} اضغطها لترى معناها.</li><li>عندما تنتهي، تبويب «ابدأ هنا» يرشدك إلى أول برنامج خطوة بخطوة.</li></ul></div>`;}
+function renderCard(){
+  if(selPin){const p=PIN[selPin.lab],k=KIND[p[2]],V=VERD[selPin.lab]||VERD[p[2]],u=new Set();
+    card.innerHTML=`<span class="cat" style="background:var(${k[1]})">${k[0]}</span><h2 dir="ltr" style="text-align:right">${esc(p[0])}</h2>
+    <div class="verdict" style="--c:var(${k[1]})"><b>هل أستخدمه في مشروعي؟</b><strong>${bd(V.v)}</strong><span>${gl(V.d,u)}</span></div>
+    <div class="box"><b>وظائف هذا الطرف</b>${gl(p[1],u)}</div>
+    ${V.ex?`<div class="box simple"><b>أمثلة لما توصله به</b>${gl(V.ex,u)}</div>`:''}
+    ${/ADC2/.test(p[1])?`<div class="box warn"><b>انتبه</b>${gl('قراءة الحساسات التناظرية على هذا الطرف (ADC2) لا تعمل أثناء تشغيل Wi‑Fi. إن كان مشروعك متصلاً بالإنترنت فاستخدم أطراف ADC1: ‏32 أو 33 أو 34 أو 35 أو 36 أو 39.',u)}</div>`:''}
+    <dl><dt>المكتوب على اللوحة</dt><dd>${bd(selPin.lab)}</dd><dt>مكانه</dt><dd>${bd((selPin.side==='L'?'الصف الأيسر':'الصف الأيمن')+' · رقم '+(selPin.i+1)+' من الأعلى')}</dd><dt>جهد الإشارة</dt><dd>${p[2]==='pwr'||p[2]==='gnd'?'—':bd('يعمل بـ3.3V ولا يتحمل 5V')}</dd></dl>
+    <button class="link" data-act="home">العودة إلى المقدمة</button>`;return;}
+  if(!sel){card.innerHTML=welcome();return;}
+  const I=INFO[sel],E=BEG[sel],u=new Set();
+  card.innerHTML=`<span class="cat">${bd(I.c)}</span><h2>${bd(I.n)}</h2>
+    <div class="box simple"><b>ببساطة</b>${gl(E.e,u)}</div>
+    <div class="box"><b>تشبيه يقرّب الفكرة</b>${gl(E.a,u)}</div>
+    <div class="box"><b>متى يهمك هذا؟</b>${gl(E.w,u)}</div>
+    ${E.m?`<div class="box warn"><b>انتبه</b>${gl(E.m,u)}</div>`:''}
+    <details class="tech"${techOpen?' open':''}><summary>التفاصيل التقنية والمواصفات</summary><p>${gl(I.d,u)}</p><dl>${I.s.map(([a,b])=>`<dt>${bd(a)}</dt><dd>${gl(b,u)}</dd>`).join('')}</dl></details>
+    <button class="link" data-act="home">العودة إلى المقدمة</button>`;}
+card.addEventListener('toggle',e=>{if(e.target.matches('details.tech'))techOpen=e.target.open;},true);
+list.innerHTML=GROUPS.map(([g,ids])=>`<div class="grp"><span>${bd(g)}</span><div class="prows">${ids.map(id=>`<button class="prow" data-id="${id}" aria-pressed="false"><b>${bd(INFO[id].n.replace(/ \(.*?\)/,''))}</b><span>${bd(BEG[id].s)}</span></button>`).join('')}</div></div>`).join('');
+list.style.cssText='display:flex;flex-direction:column;gap:12px';
+list.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(b){select(b.dataset.id,null,true);showCard();}});
+const pm=$('#pinmap');
+const colHTML=(arr,side)=>`<div class="pincol ${side==='R'?'r':''}">${arr.map((l,i)=>`<button class="pin" data-side="${side}" data-i="${i}" aria-pressed="false"><i style="background:var(${KIND[PIN[l][2]][1]})"></i>${l}${PIN[l][0]!==l&&/GPIO/.test(PIN[l][0])&&!/^\d+$/.test(l)?' · '+PIN[l][0].replace('GPIO','IO'):''}</button>`).join('')}</div>`;
+pm.innerHTML=colHTML(PL,'L')+colHTML(PR,'R');
+$('#legend').innerHTML=Object.values(KIND).map(([n,v])=>`<span><i style="background:var(${v})"></i>${n}</span>`).join('');
+pm.addEventListener('click',e=>{const b=e.target.closest('.pin');if(!b)return;const s=b.dataset.side,i=+b.dataset.i;selectPin({lab:(s==='L'?PL:PR)[i],side:s,i},true);showCard();});
+// pins tab
+(function(){const u=new Set();
+  $('#prules').innerHTML=`<div class="box warn"><b>ثلاث قواعد تحمي لوحتك</b><ul class="ul">
+   <li>${gl('الأطراف تعمل بجهد 3.3V. لا تصل إشارة 5V بأي طرف GPIO مباشرة.',u)}</li>
+   <li>${gl('الطرف الواحد يعطي تياراً صغيراً، نحو 20 mA بأمان: يكفي لـLED مع مقاومة، ولا يكفي لمحرك أو مرحّل (Relay).',u)}</li>
+   <li>${gl('كل جهاز توصله يجب أن يشترك في GND مع اللوحة، وإلا لن تفهم الإشارات بعضها.',u)}</li></ul></div>`;
+  $('#pgroups').innerHTML=PGROUPS.map(([t,c,labs,d])=>`<div class="pg" style="--c:var(${c})"><h4><i></i>${bd(t)}</h4><p>${bd(d)}</p><div class="pchips">${labs.map(l=>{const p=findPin(l);const g=PIN[l][0];const n=/^GPIO\d+$/.test(g)&&!/^\d+$/.test(l)?` · ${g.replace('GPIO','')}`:'';return `<button class="pchip" style="--c:var(${c})" data-pin="${p.side}:${p.i}">${esc(l)}${n}</button>`;}).join('')}</div></div>`).join('');})();
+// start tab
+$('#startTab').innerHTML=(function(){const u=new Set();const code=t=>`<div class="code"><pre>${esc(t)}</pre><button class="btn copy" type="button">نسخ</button></div>`;
+ return `<div class="sbox"><h3>ما الذي تحتاجه</h3><ul class="ul">
+   <li>لوحة ESP32 DevKitC، وهي التي أمامك.</li>
+   <li>${gl('كابل Micro‑USB ينقل البيانات، ليس كابل شحن فقط.',u)}</li>
+   <li>حاسوب بنظام ويندوز أو ماك أو لينكس.</li>
+   <li>${gl('للتجربة الثانية: لوح تجارب، وLED، ومقاومة 220 أوم، وسلكان.',u)}</li></ul></div>
+ <div class="sbox"><h3>تجهيز الحاسوب (مرة واحدة فقط)</h3><ol class="ol">
+   <li>${gl('نزّل برنامج Arduino IDE من موقع arduino.cc وثبّته.',u)}</li>
+   <li>افتح قائمة File ثم Preferences، وفي خانة Additional boards manager URLs الصق هذا الرابط:${code('https://espressif.github.io/arduino-esp32/package_esp32_index.json')}</li>
+   <li>افتح Tools ثم Board ثم Boards Manager، ابحث عن esp32، وثبّت الحزمة esp32 by Espressif Systems. قد يستغرق التنزيل دقائق.</li>
+   <li>صل اللوحة بالكابل. يجب أن يضيء <button class="link" data-part="led">مؤشر الطاقة الأحمر</button>.</li>
+   <li>من Tools اختر Board ثم ESP32 Dev Module. ثم من Tools اختر Port والمنفذ الذي ظهر: COM3 أو ما يشبهه في ويندوز، أو اسماً يبدأ بـ <bdi dir="ltr">/dev/cu.usbserial</bdi> في ماك.</li></ol>
+   <div class="box warn"><b>لم يظهر أي منفذ؟</b>${gl('غالباً الكابل للشحن فقط، جرّب كابلاً آخر. إن استمرت المشكلة فثبّت تعريف CP210x من موقع Silicon Labs، فهو تعريف',u)} <button class="link" data-part="cp2102">شريحة المترجم</button>.</div></div>
+ <div class="sbox"><h3>التجربة 1: اجعل اللوحة تتكلم</h3>
+   <p>${gl('لا تحتاج أي توصيل. انسخ البرنامج إلى Arduino IDE واضغط زر الرفع (السهم →). عندما تظهر كلمة Done uploading افتح Tools ثم Serial Monitor، واختر من أسفل النافذة السرعة 115200 baud.',u)}</p>
+   ${code(`void setup() {
+  Serial.begin(115200);          // ابدأ الاتصال بالحاسوب بسرعة 115200
+  Serial.println("Hello from ESP32!");
+}
+
+void loop() {
+  Serial.print("Running for ");
+  Serial.print(millis() / 1000); // عدد الثواني منذ التشغيل
+  Serial.println(" seconds");
+  delay(1000);                   // انتظر ثانية واحدة ثم كرر
+}`)}
+   <p>${gl('سترى رسالة جديدة كل ثانية. setup يعمل مرة واحدة عند التشغيل، وloop يتكرر إلى الأبد. هذان الجزءان موجودان في كل برنامج ستكتبه.',u)}</p></div>
+ <div class="sbox"><h3>التجربة 2: أضئ LED</h3>
+   <p>${gl('افصل الكابل أولاً قبل أي توصيل. الـLED له رجلان: الطويلة هي الموجب (+) والقصيرة هي السالب (−). صل كالتالي:',u)}</p>
+   <ul class="wire">
+     <li>الطرف <button class="link" data-pin="R:1">23</button> ← مقاومة 220 أوم ← الرجل الطويلة للـLED</li>
+     <li>الرجل القصيرة للـLED ← الطرف <button class="link" data-pin="R:0">GND</button> المجاور له</li></ul>
+   ${code(`const int LED_PIN = 23;        // الطرف الذي وصلنا به الـLED
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);       // اجعل الطرف «مخرجاً»
+}
+
+void loop() {
+  digitalWrite(LED_PIN, HIGH);    // 3.3V على الطرف: يضيء
+  delay(500);                     // نصف ثانية
+  digitalWrite(LED_PIN, LOW);     // 0V على الطرف: ينطفئ
+  delay(500);
+}`)}
+   <p>${gl('غيّر الرقم 500 إلى 100 وارفع البرنامج من جديد، وسترى الوميض أسرع. هكذا تتعلم: غيّر شيئاً واحداً وراقب النتيجة.',u)}</p></div>
+ <div class="sbox"><h3>التجربة 3: ابحث عن شبكات Wi‑Fi</h3>
+   <p>${gl('الآن ميزة ESP32 الكبرى. هذا البرنامج يجعل اللوحة تبحث عن شبكات Wi‑Fi حولك وتعرض أسماءها وقوة إشاراتها في الشاشة التسلسلية.',u)}</p>
+   ${code(`#include <WiFi.h>
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);            // وضع «جهاز» يتصل بالشبكات
+}
+
+void loop() {
+  int n = WiFi.scanNetworks();    // ابحث عن الشبكات القريبة
+  Serial.printf("Found %d networks\\n", n);
+  for (int i = 0; i < n; i++) {
+    // الاسم وقوة الإشارة: الأقرب إلى الصفر أقوى
+    Serial.printf("%d) %s  (%d dBm)\\n", i + 1, WiFi.SSID(i).c_str(), WiFi.RSSI(i));
+  }
+  delay(5000);
+}`)}
+   <p>${gl('قوة الإشارة رقم سالب: ‎-40 ممتازة، و‎-80 ضعيفة. جرّب أن تغطي الهوائي بيدك وراقب كيف تضعف الأرقام.',u)}</p></div>
+ <div class="sbox"><h3>إن واجهتك مشكلة</h3><div class="trouble">
+   <div><code>Failed to connect to ESP32</code> أو بقاء <code>Connecting....</code><br>${gl('اضغط زر BOOT مطولاً عند ظهور النقاط، واتركه عندما تظهر النسبة المئوية.',u)} <button class="link" data-part="boot">أين زر BOOT؟</button></div>
+   <div>رموز غريبة في الشاشة التسلسلية<br>${gl('السرعة أسفل النافذة لا تطابق Serial.begin. اختر 115200.',u)}</div>
+   <div><code>Brownout detector was triggered</code><br>${gl('الكهرباء غير كافية. جرّب كابلاً أقصر أو منفذ USB آخر في الحاسوب.',u)}</div>
+   <div>اللوحة تعيد التشغيل بلا توقف بعد التوصيل<br>${gl('افصل كل الأسلاك، وتأكد أنك لم تستخدم أطراف الفلاش أو أطراف الربط. راجع تبويب «الأطراف».',u)}</div>
+   <div>اللوحة أصبحت ساخنة جداً<br>${gl('افصلها فوراً. غالباً يوجد تماس بين 3V3 أو 5V وبين GND في توصيلاتك.',u)}</div></div></div>`;})();
+// glossary tab
+const glist=$('#glist');
+function renderGloss(q){q=(q||'').trim().toLowerCase();const items=GLOSS.filter(g=>!g.hide&&(!q||g.t.toLowerCase().includes(q)||g.d.toLowerCase().includes(q)));
+  glist.innerHTML=items.length?items.map(g=>`<div class="gitem"><b>${bd(g.t)}</b><p>${bd(g.d)}</p></div>`).join(''):`<p class="lead">لا يوجد مصطلح يطابق «${esc(q)}». جرّب كلمة أقصر.</p>`;}
+renderGloss('');$('#gq').addEventListener('input',e=>renderGloss(e.target.value));
+// tabs
+const tabs=[...document.querySelectorAll('.tab')];
+function showTab(n){for(const t of tabs)t.setAttribute('aria-selected',String(t.dataset.tab===n));for(const p of document.querySelectorAll('.tp'))p.hidden=p.dataset.tp!==n;try{localStorage.setItem('esp32-tab',n);}catch(e){}}
+for(const t of tabs)t.addEventListener('click',()=>showTab(t.dataset.tab));
+try{const s=localStorage.getItem('esp32-tab');if(s&&tabs.some(t=>t.dataset.tab===s))showTab(s);}catch(e){}
+// glossary popover
+const gpop=$('#gpop');let gpopFor=null;
+function openTerm(el){const G=GL[el.dataset.g];if(!G)return;gpop.innerHTML=`<h4>${bd(G.t)}</h4><p>${bd(G.d)}</p>`;gpop.hidden=false;gpopFor=el;
+  const r=el.getBoundingClientRect(),w=gpop.offsetWidth,h=gpop.offsetHeight;let x=Math.min(Math.max(16,r.right-w),innerWidth-w-16);let y=r.bottom+8;if(y+h>innerHeight-12)y=Math.max(12,r.top-h-8);
+  gpop.style.left=x+'px';gpop.style.top=y+'px';}
+function closeTerm(){gpop.hidden=true;gpopFor=null;}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(t){e.stopPropagation();if(gpopFor===t)closeTerm();else openTerm(t);return;}
+  if(!e.target.closest('#gpop'))closeTerm();
+  const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='tour')tourGo(0);else if(a.dataset.act==='home'){sel=null;selPin=null;pinRing.visible=false;syncUI();}return;}
+  const pp=e.target.closest('[data-pin]');if(pp){const [s,i]=pp.dataset.pin.split(':');selectPin({lab:(s==='L'?PL:PR)[+i],side:s,i:+i},true);showCard();return;}
+  const pt=e.target.closest('[data-part]');if(pt){select(pt.dataset.part,null,true);showCard();return;}
+  const cp=e.target.closest('.copy');if(cp){const pre=cp.parentElement.querySelector('pre');const done=()=>{cp.textContent='تم النسخ';setTimeout(()=>cp.textContent='نسخ',1600);};
+    const fallback=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);cp.textContent='حدّد النص وانسخه';};
+    try{navigator.clipboard.writeText(pre.textContent).then(done,fallback);}catch(err){fallback();}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeTerm();return;}
+  const t=e.target.closest&&e.target.closest('.term');if(t&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openTerm(t);return;}
+  if(!tourEl.hidden&&!/INPUT|TEXTAREA/.test(e.target.tagName)){if(e.key==='ArrowLeft'&&tourI<TOUR.length-1)tourGo(tourI+1);else if(e.key==='ArrowRight'&&tourI>0)tourGo(tourI-1);}});
+$('#panel').addEventListener('scroll',()=>{if(gpopFor&&document.contains(gpopFor))openTerm(gpopFor);},{passive:true});
+addEventListener('scroll',()=>{if(gpopFor&&document.contains(gpopFor))openTerm(gpopFor);},{passive:true});
+function showCard(){const panel=$('#panel');if(panel.scrollHeight>panel.clientHeight+4)panel.scrollTo({top:card.offsetTop-12,behavior:reduce?'auto':'smooth'});else card.scrollIntoView({block:'start',behavior:reduce?'auto':'smooth'});}
+function syncUI(){for(const b of list.querySelectorAll('[data-id]'))b.setAttribute('aria-pressed',String(!selPin&&b.dataset.id===sel));
+  for(const b of pm.querySelectorAll('.pin'))b.setAttribute('aria-pressed',String(!!selPin&&b.dataset.side===selPin.side&&+b.dataset.i===selPin.i));renderCard();closeTerm();}
+function select(id,_,focus){sel=id;selPin=null;pinRing.visible=false;syncUI();if(id==='en'||id==='boot')press(id);if(focus)focusPart(id);}
+function selectPin(p,focus){sel='headers';selPin=p;const g=pinMeshes[(p.side==='L'?-1:1)+':'+p.i];const w=new THREE.Vector3();g.getWorldPosition(w);pinRing.position.set(w.x,BT+.2+(w.y),w.z);pinRing.visible=true;syncUI();
+  if(focus)tweenTo(w.clone().add(new THREE.Vector3(p.side==='L'?-14:14,16,12)),new THREE.Vector3(w.x,BT,w.z));}
+// guided tour
+const tourEl=$('#tour');let tourI=-1;
+function setExplode(v){exTarget=v;exIn.value=Math.round(v*100);exOut.textContent=exIn.value+'%';}
+function setXray(v){xray=v;$('#xray').setAttribute('aria-pressed',String(v));for(const m of PARTS.shield.mats){m.opacity=v?.16:1;m.depthWrite=!v;}}
+function tourGo(i){tourI=i;const S=TOUR[i];tourEl.hidden=false;closeTerm();
+  setXray(!!S.xr);setExplode(S.ex||0);
+  if(S.id){sel=S.id;selPin=null;pinRing.visible=false;syncUI();}else{sel=null;selPin=null;pinRing.visible=false;syncUI();}
+  if(S.press)S.press.forEach((p,k)=>setTimeout(()=>press(p),300+k*450));
+  if(S.cam)tweenTo(new THREE.Vector3(...S.cam[0]),new THREE.Vector3(...S.cam[1]));
+  else if(S.view){const v=VIEWS[S.view];tweenTo(new THREE.Vector3(...v[0]),new THREE.Vector3(...v[1]));}
+  else if(S.id)focusPart(S.id);
+  const u=new Set();
+  tourEl.innerHTML=`<div class="meta"><span>الجولة التعليمية</span><span>الخطوة ${i+1} من ${TOUR.length}</span></div>
+   <div class="prog"><i style="width:${(i+1)/TOUR.length*100}%"></i></div>
+   <h3>${bd(S.t)}</h3><p>${gl(S.x,u)}</p>
+   <div class="nav"><button class="btn ghost" data-tour="prev" ${i===0?'disabled style="opacity:.4"':''}>السابق</button><button class="btn" data-tour="end">إنهاء الجولة</button><button class="btn primary" data-tour="next">${S.last?'افتح «ابدأ هنا»':'التالي'}</button></div>`;
+  tourEl.scrollTop=0;}
+function tourEnd(){tourEl.hidden=true;tourI=-1;}
+tourEl.addEventListener('click',e=>{const b=e.target.closest('[data-tour]');if(!b)return;const a=b.dataset.tour;
+  if(a==='prev'&&tourI>0)tourGo(tourI-1);else if(a==='end')tourEnd();
+  else if(a==='next'){if(TOUR[tourI].last){tourEnd();showTab('start');const st=$('#startTab');const panel=$('#panel');if(panel.scrollHeight>panel.clientHeight+4)panel.scrollTo({top:$('.tabs').offsetTop-8,behavior:'smooth'});else st.scrollIntoView({behavior:'smooth'});}else tourGo(tourI+1);}});
+
+/* camera tween */
+let tween=null;
+function tweenTo(pos,tgt){tween={p0:camera.position.clone(),t0:controls.target.clone(),p1:pos,t1:tgt,k:reduce?1:0};}
+function focusPart(id){const b=new THREE.Box3();for(const o of PARTS[id].objs)b.expandByObject(o);const c=b.getCenter(new THREE.Vector3()),s=b.getSize(new THREE.Vector3()).length();
+  const dir=camera.position.clone().sub(controls.target).normalize();if(dir.y<.35){dir.y=.5;dir.normalize();}tweenTo(c.clone().add(dir.multiplyScalar(Math.max(18,s*1.7+8))),c);}
+const VIEWS={iso:[[58,62,74],[0,1,0]],top:[[0,122,.5],[0,0,0]],bottom:[[0,-112,30],[0,0,0]],module:[[17,28,4],[0,3,-14]],usb:[[20,16,50],[0,2,22]]};
+document.querySelector('.views').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(!b)return;for(const x of document.querySelectorAll('[data-view]'))x.setAttribute('aria-pressed',String(x===b));const v=VIEWS[b.dataset.view];tweenTo(new THREE.Vector3(...v[0]),new THREE.Vector3(...v[1]));});
+controls.addEventListener('start',()=>{tween=null;});
+
+/* toggles */
+let exT=0,exTarget=0,xray=false,power=true,showLabels=true;
+const exIn=$('#explode'),exOut=$('#exOut');
+exIn.addEventListener('input',()=>{exTarget=exIn.value/100;exOut.textContent=exIn.value+'%';});
+const tog=(btn,fn)=>btn.addEventListener('click',()=>{const v=btn.getAttribute('aria-pressed')!=='true';btn.setAttribute('aria-pressed',String(v));fn(v);});
+$('#xray').addEventListener('click',()=>setXray(!xray));
+tog($('#power'),v=>{power=v;});
+tog($('#labelsBtn'),v=>{showLabels=v;labelsEl.hidden=!v;});
+
+/* button press */
+const pressT={};function press(id){pressT[id]=performance.now();}
+
+/* labels */
+const LBL=[['shield','الغطاء المعدني',0],['antenna','هوائي 2.4 GHz',0],['usb','Micro‑USB',0],['cp2102','CP2102',0],['ldo','منظم 3.3V',0],['en','EN',0],['boot','BOOT',0],['led','مؤشر الطاقة',0],['autoreset','إعادة الضبط',0],['diode','ثنائي الحماية',0],['soc','ESP32‑D0WDQ6',1],['flash','الفلاش 4MB',1],['xtal','كريستال 40 MHz',1]];
+const LB=LBL.map(([id,t,inner])=>{const b=new THREE.Box3();for(const o of PARTS[id].objs)b.expandByObject(o);const w=new THREE.Vector3((b.min.x+b.max.x)/2,b.max.y,(b.min.z+b.max.z)/2);
+  const host=PARTS[id].objs[0];const a=new THREE.Object3D();host.add(a);a.position.copy(host.worldToLocal(w.clone()));
+  const el=document.createElement('div');el.className='lbl';el.innerHTML=`<span>${bd(t)}</span><i></i><b></b>`;el.style.cursor='default';labelsEl.appendChild(el);return {id,a,el,inner};});
+
+/* picking */
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let pDirty=false,pLast=null,downAt=null;
+const cv=renderer.domElement;
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();pLast={x:e.clientX-r.left,y:e.clientY-r.top,w:r.width,h:r.height};pDirty=true;});
+cv.addEventListener('pointerleave',()=>{pLast=null;hover=null;tip.hidden=true;});
+cv.addEventListener('pointerdown',e=>{downAt=[e.clientX,e.clientY];});
+cv.addEventListener('pointerup',e=>{if(!downAt)return;const d=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]);downAt=null;if(d>5)return;
+  const r=cv.getBoundingClientRect();const h=pick(e.clientX-r.left,e.clientY-r.top,r.width,r.height);if(!h)return;
+  if(h.object.userData.pin)selectPin(h.object.userData.pin,false);else select(h.object.userData.part);});
+function pick(x,y,w,h){ndc.set(x/w*2-1,-(y/h)*2+1);ray.setFromCamera(ndc,camera);
+  const hits=ray.intersectObjects(pickables,false);for(const h of hits){const p=h.object.userData.part;if(xray&&p==='shield')continue;if(!h.object.visible)continue;return h;}return null;}
+
+/* resize */
+function resize(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(stage);resize();
+
+/* loop */
+const ACC=new THREE.Color(0xe2a25a);const clock=new THREE.Clock();const tmp=new THREE.Vector3();
+const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+function frame(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
+  if(tween){tween.k=Math.min(1,tween.k+dt/0.9);const e=ease(tween.k);camera.position.lerpVectors(tween.p0,tween.p1,e);controls.target.lerpVectors(tween.t0,tween.t1,e);if(tween.k>=1)tween=null;}
+  controls.update();
+  exT+= (exTarget-exT)*(reduce?1:Math.min(1,dt*6));
+  const ee=exT*exT*(3-2*exT);for(const E of EX)E.o.position.copy(E.b).addScaledVector(E.v,ee);
+  if(selPin){const g=pinMeshes[(selPin.side==='L'?-1:1)+':'+selPin.i];g.getWorldPosition(tmp);pinRing.position.set(tmp.x,tmp.y+BT+.25,tmp.z);}
+  for(const id of['en','boot']){const s=pressT[id];const a=actuators[id];let d=0;if(s){const k=(performance.now()-s)/1000;d=k<.12?k/.12:k<.3?1:Math.max(0,1-(k-.3)/.15);if(k>.5)pressT[id]=0;}a.position.y=1.0-.28*d;}
+  // hover pick
+  if(pDirty&&pLast&&!tween){pDirty=false;const h=pick(pLast.x,pLast.y,pLast.w,pLast.h);hover=h?h.object.userData.part:null;
+    if(h){const pn=h.object.userData.pin;tip.innerHTML=pn?`<b>${esc(pn.lab)}</b> · ${bd(PIN[pn.lab][0])}<br>${bd((VERD[pn.lab]||VERD[PIN[pn.lab][2]]).v)} · انقر للتفاصيل`:`<b>${bd(INFO[hover].n)}</b><br>${bd(BEG[hover].s)}`;tip.hidden=false;
+      const tx=Math.min(pLast.x+14,pLast.w-270),ty=Math.min(pLast.y+16,pLast.h-60);tip.style.transform=`translate(${Math.max(8,tx)}px,${ty}px)`;cv.style.cursor='pointer';}
+    else{tip.hidden=true;cv.style.cursor='';}}
+  // glow
+  const pulse=reduce?.3:.24+.12*Math.sin(t*4);
+  for(const id in PARTS){const lv=(!selPin&&id===sel)?pulse:(id===hover?.14:0);for(const m of PARTS[id].mats){let br=m.userData.base;
+    if(m.name==='lens'){const on=power?(.85+.15*Math.sin(t*1.3)):0;m.emissive.setRGB(1.6*on+ACC.r*lv,.18*on+ACC.g*lv,.08*on+ACC.b*lv);continue;}
+    m.emissive.setRGB(br.r+ACC.r*lv*.6,br.g+ACC.g*lv*.6,br.b+ACC.b*lv*.6);}}
+  ledLight.intensity=power?1.2:0;
+  mat.visible=camera.position.y>FLOOR_Y+.5;
+  // labels
+  if(showLabels){const r=stage.getBoundingClientRect();for(const L of LB){const vis=(!L.inner||xray||exT>.25)&&camera.position.y>-2;if(!vis){L.el.hidden=true;continue;}
+      L.a.getWorldPosition(tmp);tmp.project(camera);if(tmp.z>1||Math.abs(tmp.x)>1.1||Math.abs(tmp.y)>1.1){L.el.hidden=true;continue;}
+      L.el.hidden=false;const x=(tmp.x*.5+.5)*r.width,y=(-tmp.y*.5+.5)*r.height;L.el.style.transform=`translate(${x}px,${y}px) translate(-50%,-100%)`;
+      L.el.style.opacity=(L.id===sel&&!selPin)?1:.88;}}
+  // scale bar: 10 mm at target distance
+  const dist=camera.position.distanceTo(controls.target);const pxPerMm=renderer.domElement.clientHeight/(2*dist*Math.tan(camera.fov*Math.PI/360));
+  $('#scalebar').style.width=Math.max(4,Math.min(400,pxPerMm*10))+'px';
+  renderer.render(scene,camera);requestAnimationFrame(frame);}
+syncUI();
+renderer.compile(scene,camera);
+$('#loading').remove();
+requestAnimationFrame(frame);
+})().catch(err=>{const l=document.getElementById('loading');if(l)l.textContent='تعذّر تشغيل العرض ثلاثي الأبعاد: '+err.message;console.error(err);});
+</script>
+
+</html>
